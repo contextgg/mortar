@@ -1,0 +1,21 @@
+{
+  "name": "mortar",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "flecs",
+    "glfw3",
+    "glm",
+    "vk-bootstrap",
+    "vulkan-memory-allocator",
+    "vulkan-headers",
+    "stb",
+    "cgltf",
+    "joltphysics",
+    "miniaudio",
+    {
+      "name": "imgui",
+      "features": ["glfw-binding", "vulkan-binding"]
+    },
+    "nlohmann-json"
+  ]
+}
