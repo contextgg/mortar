@@ -20,3 +20,6 @@ Thumbs.db
 
 # Claude
 .claude/
+
+# Map editor (separate repo: contextgg/map-editor)
+tools/
