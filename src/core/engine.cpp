@@ -36,13 +36,17 @@ void VulkanEngine::init(int width, int height, const std::string& title) {
 }
 
 void VulkanEngine::init_vulkan() {
+    uint32_t glfw_ext_count = 0;
+    const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_ext_count);
+
     vkb::InstanceBuilder builder;
-    auto inst_ret = builder
-        .set_app_name("Mortar")
+    builder.set_app_name("Mortar")
         .request_validation_layers(true)
         .use_default_debug_messenger()
         .require_api_version(1, 1, 0)
-        .build();
+        .enable_extensions(glfw_ext_count, glfw_extensions);
+
+    auto inst_ret = builder.build();
 
     if (!inst_ret) {
         throw std::runtime_error("Failed to create Vulkan instance: " + inst_ret.error().message());
