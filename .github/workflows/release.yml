@@ -1,0 +1,116 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake build-essential pkg-config \
+            libvulkan-dev vulkan-tools vulkan-validationlayers \
+            libwayland-dev libxkbcommon-dev xorg-dev \
+            glslc ninja-build
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+
+      - name: Configure (Release)
+        run: cmake --preset release
+        env:
+          VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+      - name: Build
+        run: cmake --build --preset release
+
+      - name: Package
+        run: |
+          mkdir -p mortar-linux-x86_64
+          cp build/mortar mortar-linux-x86_64/
+          cp -r build/shaders mortar-linux-x86_64/
+          cp -r build/assets mortar-linux-x86_64/
+          tar czf mortar-linux-x86_64.tar.gz mortar-linux-x86_64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mortar-linux-x86_64
+          path: mortar-linux-x86_64.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vulkan SDK
+        uses: humbletim/install-vulkan-sdk@v1.2.1
+        with:
+          version: latest
+          cache: true
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+
+      - name: Configure (Release)
+        run: cmake --preset release
+        env:
+          VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+      - name: Build
+        run: cmake --build --preset release --config Release
+
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p mortar-windows-x86_64
+          cp build/Release/mortar.exe mortar-windows-x86_64/ || cp build/mortar.exe mortar-windows-x86_64/
+          cp -r build/shaders mortar-windows-x86_64/ || cp -r build/Release/shaders mortar-windows-x86_64/
+          cp -r build/assets mortar-windows-x86_64/ || cp -r build/Release/assets mortar-windows-x86_64/
+          7z a mortar-windows-x86_64.zip mortar-windows-x86_64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mortar-windows-x86_64
+          path: mortar-windows-x86_64.zip
+
+  release:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - name: Generate latest.json
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          cat > latest.json << MANIFEST
+          {
+            "version": "${VERSION}",
+            "pub_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "platforms": {
+              "linux-x86_64": {
+                "url": "https://github.com/contextgg/mortar/releases/download/${GITHUB_REF_NAME}/mortar-linux-x86_64.tar.gz"
+              },
+              "windows-x86_64": {
+                "url": "https://github.com/contextgg/mortar/releases/download/${GITHUB_REF_NAME}/mortar-windows-x86_64.zip"
+              }
+            }
+          }
+          MANIFEST
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            mortar-linux-x86_64/mortar-linux-x86_64.tar.gz
+            mortar-windows-x86_64/mortar-windows-x86_64.zip
+            latest.json
+          generate_release_notes: true
