@@ -118,4 +118,4 @@ jobs:
       - name: Sync release to API
         run: |
           curl -sf -X POST "https://api.ctx.gg/api/games/mortar/releases/sync" \
-            -H "X-Webhook-Secret: ${{ secrets.GITHUB_WEBHOOK_SECRET }}"
+            -H "X-Webhook-Secret: ${{ secrets.API_WEBHOOK_SECRET }}"
