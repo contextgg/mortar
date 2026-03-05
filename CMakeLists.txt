@@ -65,8 +65,6 @@ target_include_directories(mortar PRIVATE
     ${MINIAUDIO_INCLUDE_DIRS}
 )
 
-find_package(X11 REQUIRED)
-
 target_link_libraries(mortar PRIVATE
     $<IF:$<TARGET_EXISTS:flecs::flecs>,flecs::flecs,flecs::flecs_static>
     glfw
@@ -77,12 +75,18 @@ target_link_libraries(mortar PRIVATE
     Jolt::Jolt
     imgui::imgui
     nlohmann_json::nlohmann_json
-    X11::X11
-    X11::Xrandr
-    X11::Xinerama
-    X11::Xcursor
-    X11::Xi
 )
+
+if(UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+    target_link_libraries(mortar PRIVATE
+        X11::X11
+        X11::Xrandr
+        X11::Xinerama
+        X11::Xcursor
+        X11::Xi
+    )
+endif()
 
 # Shaders must be compiled before the executable runs
 add_dependencies(mortar shaders)
