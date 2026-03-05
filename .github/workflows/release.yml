@@ -114,3 +114,8 @@ jobs:
             mortar-windows-x86_64/mortar-windows-x86_64.zip
             latest.json
           generate_release_notes: true
+
+      - name: Sync release to API
+        run: |
+          curl -sf -X POST "https://api.ctx.gg/api/games/mortar/releases/sync" \
+            -H "X-Webhook-Secret: ${{ secrets.GITHUB_WEBHOOK_SECRET }}"
