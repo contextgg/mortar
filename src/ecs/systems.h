@@ -2,8 +2,7 @@
 
 #include <flecs.h>
 
-class VulkanEngine;
-class Input;
 class PhysicsWorld;
 
-void register_systems(flecs::world& world, VulkanEngine& engine, Input& input, PhysicsWorld* physics = nullptr);
+// Register shared systems (movement, physics, combat, AI) — used by both client and server
+void register_shared_systems(flecs::world& world, PhysicsWorld* physics = nullptr);

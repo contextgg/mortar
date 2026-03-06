@@ -9,7 +9,7 @@
 #include "core/engine.h"
 #include "core/input.h"
 #include "ecs/components.h"
-#include "ecs/systems.h"
+#include "ecs/client_systems.h"
 #include "physics/physics_world.h"
 #include "audio/audio_engine.h"
 #include "renderer/imgui_renderer.h"
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
     // Set up ECS world
     flecs::world world;
-    register_systems(world, engine, input, &physics);
+    register_client_systems(world, engine, input, &physics);
     register_spawner_system(world, physics);
 
     glm::vec3 player_spawn_pos{0.0f, 2.0f, 0.0f};
@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
     uint32_t player_mat = engine.create_material(player_props);
 
     // Player entity (with character controller) — uses spawn position from map or default
-    auto player = create_player(world, engine, physics, humanoid_mesh, player_mat);
+    auto player = create_player(world, physics, humanoid_mesh, player_mat);
     player.set(Transform{.position = player_spawn_pos});
 
     // Camera (always needed)

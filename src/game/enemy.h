@@ -3,7 +3,6 @@
 #include <flecs.h>
 #include <glm/glm.hpp>
 
-class VulkanEngine;
 class PhysicsWorld;
 
 flecs::entity create_enemy(flecs::world& world, PhysicsWorld& physics,

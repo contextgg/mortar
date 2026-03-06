@@ -31,7 +31,7 @@ jobs:
       - name: Build
         run: cmake --build --preset release
 
-      - name: Package
+      - name: Package client
         run: |
           mkdir -p mortar-linux-x86_64
           cp build/mortar mortar-linux-x86_64/
@@ -39,10 +39,22 @@ jobs:
           cp -r build/assets mortar-linux-x86_64/
           tar czf mortar-linux-x86_64.tar.gz mortar-linux-x86_64
 
+      - name: Package server
+        run: |
+          mkdir -p mortar-server-linux-x86_64
+          cp build/mortar-server mortar-server-linux-x86_64/
+          cp -r build/assets mortar-server-linux-x86_64/
+          tar czf mortar-server-linux-x86_64.tar.gz mortar-server-linux-x86_64
+
       - uses: actions/upload-artifact@v4
         with:
           name: mortar-linux-x86_64
           path: mortar-linux-x86_64.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mortar-server-linux-x86_64
+          path: mortar-server-linux-x86_64.tar.gz
 
   build-windows:
     runs-on: windows-latest
@@ -66,7 +78,7 @@ jobs:
       - name: Build
         run: cmake --build --preset release --config Release
 
-      - name: Package
+      - name: Package client
         shell: bash
         run: |
           mkdir -p mortar-windows-x86_64
@@ -75,10 +87,23 @@ jobs:
           cp -r build/assets mortar-windows-x86_64/ || cp -r build/Release/assets mortar-windows-x86_64/
           7z a mortar-windows-x86_64.zip mortar-windows-x86_64
 
+      - name: Package server
+        shell: bash
+        run: |
+          mkdir -p mortar-server-windows-x86_64
+          cp build/Release/mortar-server.exe mortar-server-windows-x86_64/ || cp build/mortar-server.exe mortar-server-windows-x86_64/
+          cp -r build/assets mortar-server-windows-x86_64/ || cp -r build/Release/assets mortar-server-windows-x86_64/
+          7z a mortar-server-windows-x86_64.zip mortar-server-windows-x86_64
+
       - uses: actions/upload-artifact@v4
         with:
           name: mortar-windows-x86_64
           path: mortar-windows-x86_64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mortar-server-windows-x86_64
+          path: mortar-server-windows-x86_64.zip
 
   release:
     needs: [build-linux, build-windows]
@@ -112,6 +137,8 @@ jobs:
           files: |
             mortar-linux-x86_64/mortar-linux-x86_64.tar.gz
             mortar-windows-x86_64/mortar-windows-x86_64.zip
+            mortar-server-linux-x86_64/mortar-server-linux-x86_64.tar.gz
+            mortar-server-windows-x86_64/mortar-server-windows-x86_64.zip
             latest.json
           generate_release_notes: true
 
