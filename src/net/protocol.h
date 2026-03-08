@@ -31,8 +31,9 @@ enum class MessageType : uint8_t {
     ServerSnapshot    = 0x12,  // Full world state snapshot
     ServerPlayerJoin  = 0x13,  // A player joined
     ServerPlayerLeave = 0x14,  // A player left
-    ServerGameStart   = 0x15,  // Game is starting
+    ServerGameStart   = 0x15,  // Game is starting (includes map slug)
     ServerGameOver    = 0x16,  // Game ended (results)
+    ServerWaiting     = 0x17,  // Waiting for players (count/total)
 };
 
 // Wire format: [uint8_t type][uint16_t payload_len][payload bytes]
@@ -148,6 +149,31 @@ struct SnapshotMsg {
         if (offset + players_size <= len) {
             memcpy(msg.players, data + offset, players_size);
         }
+        return msg;
+    }
+};
+
+struct GameStartMsg {
+    char map_slug[64];
+    uint8_t player_count;
+    uint8_t countdown_seconds;
+
+    std::vector<uint8_t> serialize() const {
+        std::vector<uint8_t> buf(sizeof(map_slug) + 2);
+        memcpy(buf.data(), map_slug, sizeof(map_slug));
+        buf[sizeof(map_slug)] = player_count;
+        buf[sizeof(map_slug) + 1] = countdown_seconds;
+        return buf;
+    }
+
+    static GameStartMsg deserialize(const uint8_t* data, size_t len) {
+        GameStartMsg msg{};
+        if (len >= sizeof(msg.map_slug))
+            memcpy(msg.map_slug, data, sizeof(msg.map_slug));
+        if (len >= sizeof(msg.map_slug) + 1)
+            msg.player_count = data[sizeof(msg.map_slug)];
+        if (len >= sizeof(msg.map_slug) + 2)
+            msg.countdown_seconds = data[sizeof(msg.map_slug) + 1];
         return msg;
     }
 };
