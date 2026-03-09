@@ -1,9 +1,8 @@
 #include <iostream>
-#include <cmath>
+#include <string>
 
 #include <flecs.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 
 #include "core/engine.h"
@@ -15,11 +14,38 @@
 #include "renderer/imgui_renderer.h"
 #include "game/player.h"
 #include "game/weapon.h"
-#include "game/enemy.h"
 #include "game/spawner.h"
 #include "map/map_loader.h"
+#include "net/net_common.h"
+#include "net/net_client.h"
+
+struct ClientArgs {
+    std::string map_path;
+    std::string connect_addr;  // "host:port"
+    std::string token;
+};
+
+static ClientArgs parse_args(int argc, char* argv[]) {
+    ClientArgs args;
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if ((arg == "--map" || arg == "-m") && i + 1 < argc) {
+            args.map_path = argv[++i];
+        } else if (arg == "--connect" && i + 1 < argc) {
+            args.connect_addr = argv[++i];
+        } else if (arg == "--token" && i + 1 < argc) {
+            args.token = argv[++i];
+        } else if (!arg.starts_with("-") && args.map_path.empty()) {
+            args.map_path = arg; // positional arg = map path
+        }
+    }
+    return args;
+}
 
 int main(int argc, char* argv[]) {
+    auto args = parse_args(argc, argv);
+    bool multiplayer = !args.connect_addr.empty();
+
     VulkanEngine engine;
 
     try {
@@ -60,138 +86,45 @@ int main(int argc, char* argv[]) {
     register_client_systems(world, engine, input, &physics);
     register_spawner_system(world, physics);
 
-    glm::vec3 player_spawn_pos{0.0f, 2.0f, 0.0f};
-    bool map_loaded = false;
+    // Networking (multiplayer mode)
+    NetClient net_client;
+    if (multiplayer) {
+        net_init();
 
-    // Load map from CLI argument if provided
-    if (argc > 1) {
-        auto map_result = load_map(argv[1], world, engine, physics);
-        if (map_result.success) {
-            player_spawn_pos = map_result.player_spawn_position;
-            map_loaded = true;
-            std::cout << "Loaded map: " << argv[1] << std::endl;
+        // Parse host:port
+        std::string host = "127.0.0.1";
+        uint16_t port = DEFAULT_SERVER_PORT;
+        auto colon = args.connect_addr.rfind(':');
+        if (colon != std::string::npos) {
+            host = args.connect_addr.substr(0, colon);
+            port = static_cast<uint16_t>(std::stoi(args.connect_addr.substr(colon + 1)));
         } else {
-            std::cerr << "Failed to load map: " << map_result.error << std::endl;
-            std::cerr << "Falling back to default scene." << std::endl;
-        }
-    }
-
-    if (!map_loaded) {
-        // Upload meshes
-        uint32_t cube_mesh = engine.upload_mesh(cube_vertices(), cube_indices());
-        uint32_t plane_mesh = engine.upload_mesh(plane_vertices(50.0f, 10.0f), plane_indices());
-
-        // Create materials
-        MaterialUBO ground_props{};
-        ground_props.base_color = glm::vec4(0.35f, 0.55f, 0.3f, 1.0f);
-        ground_props.roughness = 0.9f;
-        uint32_t ground_mat = engine.create_material(ground_props);
-
-        MaterialUBO red_props{};
-        red_props.base_color = glm::vec4(0.9f, 0.2f, 0.2f, 1.0f);
-        red_props.roughness = 0.4f;
-        red_props.metallic = 0.3f;
-        uint32_t red_mat = engine.create_material(red_props);
-
-        MaterialUBO blue_props{};
-        blue_props.base_color = glm::vec4(0.2f, 0.3f, 0.9f, 1.0f);
-        blue_props.roughness = 0.3f;
-        blue_props.metallic = 0.5f;
-        uint32_t blue_mat = engine.create_material(blue_props);
-
-        MaterialUBO enemy_props{};
-        enemy_props.base_color = glm::vec4(0.8f, 0.15f, 0.1f, 1.0f);
-        enemy_props.roughness = 0.6f;
-        enemy_props.metallic = 0.1f;
-        uint32_t enemy_mat = engine.create_material(enemy_props);
-
-        // Sun light
-        world.entity("Sun")
-            .set(DirectionalLight{
-                .direction = glm::vec3(-0.4f, -0.8f, -0.4f),
-                .color = glm::vec3(1.0f, 0.95f, 0.85f),
-                .intensity = 1.2f,
-            });
-
-        // Point light
-        world.entity("PointLight1")
-            .set(Transform{.position = glm::vec3(3.0f, 3.0f, 3.0f)})
-            .set(PointLight{
-                .color = glm::vec3(0.4f, 0.6f, 1.0f),
-                .intensity = 2.0f,
-                .radius = 15.0f,
-            });
-
-        // Ground plane (with physics)
-        physics.add_box(glm::vec3(50.0f, 0.1f, 50.0f), glm::vec3(0, -0.1f, 0),
-                        glm::quat(1, 0, 0, 0), true);
-
-        world.entity("Ground")
-            .set(Transform{.position = glm::vec3(0.0f)})
-            .set(MeshHandle{.index = plane_mesh})
-            .set(MaterialHandle{.index = ground_mat});
-
-        // Decorative cubes with physics
-        auto spawn_cube = [&](const char* name, glm::vec3 pos, uint32_t mat, float spin = 1.0f) {
-            uint64_t eid = world.entity(name)
-                .set(Transform{.position = pos})
-                .set(AngularVelocity{.axis = glm::vec3(0, 1, 0), .speed = spin})
-                .set(MeshHandle{.index = cube_mesh})
-                .set(MaterialHandle{.index = mat})
-                .set(Health{.current = 50.0f, .max = 50.0f})
-                .id();
-
-            physics.add_box(glm::vec3(0.5f), pos, glm::quat(1, 0, 0, 0), true, eid);
-        };
-
-        spawn_cube("RedCube", glm::vec3(-3, 0.5f, -3), red_mat, 1.5f);
-        spawn_cube("BlueCube", glm::vec3(4, 0.5f, -2), blue_mat, 1.0f);
-
-        // Scattered target cubes
-        for (int i = 0; i < 5; i++) {
-            float x = -8.0f + i * 4.0f;
-            float z = -8.0f;
-            MaterialUBO props{};
-            props.base_color = glm::vec4(0.5f + i * 0.1f, 0.3f, 0.7f - i * 0.1f, 1.0f);
-            props.roughness = 0.2f + i * 0.15f;
-            props.metallic = 0.1f * i;
-            uint32_t mat = engine.create_material(props);
-
-            std::string cube_name = "TargetCube_" + std::to_string(i);
-            uint64_t eid = world.entity(cube_name.c_str())
-                .set(Transform{
-                    .position = glm::vec3(x, 0.5f, z),
-                    .scale = glm::vec3(0.8f),
-                })
-                .set(AngularVelocity{
-                    .axis = glm::vec3(0.3f, 1.0f, 0.2f),
-                    .speed = 0.5f + i * 0.3f,
-                })
-                .set(MeshHandle{.index = cube_mesh})
-                .set(MaterialHandle{.index = mat})
-                .set(Health{.current = 30.0f, .max = 30.0f})
-                .id();
-
-            physics.add_box(glm::vec3(0.4f), glm::vec3(x, 0.5f, z),
-                            glm::quat(1, 0, 0, 0), true, eid);
+            host = args.connect_addr;
         }
 
-        // Enemy spawner
-        world.entity("EnemySpawner")
-            .set(SpawnerConfig{
-                .spawn_interval = 4.0f,
-                .spawn_radius = 15.0f,
-                .max_enemies = 10,
-                .enemy_mesh = cube_mesh,
-                .enemy_material = enemy_mat,
-            })
-            .set(SpawnerState{.timer = 2.0f});
+        std::cout << "Connecting to " << host << ":" << port << std::endl;
 
-        // Spawn a few initial enemies
-        create_enemy(world, physics, glm::vec3(8, 0.5f, -5), cube_mesh, enemy_mat);
-        create_enemy(world, physics, glm::vec3(-6, 0.5f, -8), cube_mesh, enemy_mat);
-        create_enemy(world, physics, glm::vec3(3, 0.5f, -12), cube_mesh, enemy_mat);
+        net_client.on_snapshot([&world](const SnapshotMsg& snap) {
+            // TODO: interpolate remote player positions
+            // For now, just update transforms of remote player entities
+        });
+
+        net_client.on_disconnect([]() {
+            std::cerr << "Disconnected from server" << std::endl;
+        });
+
+        net_client.connect(host, port, args.token);
     }
+
+    // Load map (use default if none specified)
+    std::string map_path = args.map_path.empty() ? "assets/maps/default.json" : args.map_path;
+    auto map_result = load_map(map_path, world, engine, physics);
+    if (!map_result.success) {
+        std::cerr << "Failed to load map: " << map_result.error << std::endl;
+        return 1;
+    }
+    std::cout << "Loaded map: " << map_path << std::endl;
+    glm::vec3 player_spawn_pos = map_result.player_spawn_position;
 
     // Player mesh + material (always needed)
     uint32_t humanoid_mesh = engine.upload_mesh(humanoid_vertices(), humanoid_indices());
@@ -222,6 +155,27 @@ int main(int argc, char* argv[]) {
     while (!engine.should_close()) {
         engine.poll_events();
         input.update();
+
+        // Poll network
+        if (multiplayer) {
+            net_client.poll();
+
+            // Send input to server
+            if (net_client.is_connected()) {
+                InputSnapshot snap{};
+                snap.tick = net_client.server_tick();
+                world.each([&snap](const Player&, const PlayerInput& pi) {
+                    snap.move_dir = pi.move_dir;
+                    snap.look_delta = pi.mouse_delta;
+                    snap.buttons = 0;
+                    if (pi.fire) snap.buttons |= InputSnapshot::BTN_FIRE;
+                    if (pi.jump) snap.buttons |= InputSnapshot::BTN_JUMP;
+                    if (pi.dodge_left) snap.buttons |= InputSnapshot::BTN_DODGE_LEFT;
+                    if (pi.dodge_right) snap.buttons |= InputSnapshot::BTN_DODGE_RIGHT;
+                });
+                net_client.send_input(snap);
+            }
+        }
 
         // ESC to release cursor / close
         if (input.key_pressed(GLFW_KEY_ESCAPE)) {
@@ -283,6 +237,11 @@ int main(int argc, char* argv[]) {
         engine.clear_renderables();
         world.progress(delta);
         engine.draw_frame();
+    }
+
+    if (multiplayer) {
+        net_client.disconnect();
+        net_shutdown();
     }
 
     imgui_renderer.shutdown();

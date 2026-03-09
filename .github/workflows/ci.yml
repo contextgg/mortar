@@ -31,3 +31,91 @@ jobs:
 
       - name: Build
         run: cmake --build --preset default
+
+  schema:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install tomli
+
+      - name: Generate schema
+        run: |
+          python tools/extract_schema.py \
+            --out-dir ${{ runner.temp }}/schema \
+            --commit ${{ github.sha }}
+
+      - name: Fetch latest schema from mortar-schema main
+        id: fetch_old
+        run: |
+          mkdir -p ${{ runner.temp }}/old
+          if curl -sfL "https://raw.githubusercontent.com/contextgg/mortar-schema/main/schema.json" \
+               -o ${{ runner.temp }}/old/schema.json; then
+            echo "has_previous=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_previous=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for changes
+        id: diff
+        run: |
+          NEW=${{ runner.temp }}/schema/schema.json
+          OLD=${{ runner.temp }}/old/schema.json
+
+          if [ "${{ steps.fetch_old.outputs.has_previous }}" = "false" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "No previous release — will create first release"
+            exit 0
+          fi
+
+          # Compare everything except volatile fields
+          CHANGED=$(python3 -c "
+          import json
+          old = json.load(open('$OLD'))
+          new = json.load(open('$NEW'))
+          for s in [old, new]:
+              s.pop('generated_at', None)
+              s.pop('engine_commit', None)
+              s.pop('schema_version', None)
+          print('true' if old != new else 'false')
+          ")
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "Schema changed: $CHANGED"
+
+      - name: Determine version bump
+        if: steps.diff.outputs.changed == 'true'
+        id: version
+        run: |
+          OLD_ARG=""
+          if [ "${{ steps.fetch_old.outputs.has_previous }}" = "true" ]; then
+            OLD_ARG="--old ${{ runner.temp }}/old/schema.json"
+          fi
+
+          VERSION=$(python tools/bump_version.py $OLD_ARG --new ${{ runner.temp }}/schema/schema.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "New version: $VERSION"
+
+      - name: Push to mortar-schema
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          eval $(ssh-agent -s)
+          echo "${{ secrets.SCHEMA_DEPLOY_KEY }}" | ssh-add -
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+          cd $(mktemp -d)
+          git clone git@github.com:contextgg/mortar-schema.git .
+          cp ${{ runner.temp }}/schema/schema.json .
+          cp ${{ runner.temp }}/schema/schema.d.ts .
+          git config user.name "mortar-ci"
+          git config user.email "ci@context.gg"
+          git add schema.json schema.d.ts
+          git commit -m "Update schema to v${{ steps.version.outputs.version }} from mortar@${GITHUB_SHA::7}"
+          git push origin main

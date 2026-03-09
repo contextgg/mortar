@@ -1,0 +1,250 @@
+# schema_meta.toml — Metadata overlay for schema generation
+# Keeps components.h clean of annotations. Merged by extract_schema.py.
+
+# ---------- Component metadata ----------
+
+[components.transform]
+display_name = "Transform"
+category = "core"
+required = true
+
+[components.transform.fields.position]
+ui = { min = -1000, max = 1000, step = 0.1 }
+
+[components.transform.fields.rotation]
+ui = { min = -1, max = 1, step = 0.01 }
+
+[components.transform.fields.scale]
+ui = { min = 0.01, max = 100, step = 0.1 }
+
+[components.directional_light]
+display_name = "Directional Light"
+category = "lighting"
+
+[components.directional_light.fields.direction]
+ui = { min = -1, max = 1, step = 0.01 }
+
+[components.directional_light.fields.intensity]
+ui = { min = 0, max = 50, step = 0.1 }
+
+[components.point_light]
+display_name = "Point Light"
+category = "lighting"
+
+[components.point_light.fields.intensity]
+ui = { min = 0, max = 50, step = 0.1 }
+
+[components.point_light.fields.radius]
+ui = { min = 0, max = 200, step = 1 }
+
+[components.health]
+display_name = "Health"
+category = "gameplay"
+
+[components.health.fields.current]
+ui = { min = 0, max = 10000, step = 1 }
+
+[components.health.fields.max]
+ui = { min = 1, max = 10000, step = 1 }
+
+[components.ai_state]
+display_name = "AI State"
+category = "gameplay"
+
+[components.ai_state.fields.detect_range]
+ui = { min = 0, max = 200, step = 1 }
+
+[components.ai_state.fields.attack_range]
+ui = { min = 0, max = 50, step = 0.5 }
+
+[components.ai_state.fields.move_speed]
+ui = { min = 0, max = 50, step = 0.5 }
+
+[components.ai_state.fields.attack_cooldown]
+ui = { min = 0, max = 10, step = 0.1 }
+
+[components.ai_state.fields.cooldown_timer]
+runtime_only = true
+
+[components.angular_velocity]
+display_name = "Angular Velocity"
+category = "core"
+
+[components.angular_velocity.fields.axis]
+ui = { min = -1, max = 1, step = 0.01 }
+
+[components.angular_velocity.fields.speed]
+ui = { min = -20, max = 20, step = 0.1 }
+
+[components.particle_emitter]
+display_name = "Particle Emitter"
+category = "effects"
+
+[components.particle_emitter.fields.burst_count]
+ui = { min = 1, max = 500, step = 1 }
+
+[components.particle_emitter.fields.emit_timer]
+runtime_only = true
+
+[components.particle_emitter.fields.emit_interval]
+ui = { min = 0, max = 10, step = 0.1 }
+
+[components.particle_emitter.fields.start_size]
+ui = { min = 0, max = 10, step = 0.1 }
+
+[components.particle_emitter.fields.end_size]
+ui = { min = 0, max = 10, step = 0.1 }
+
+[components.particle_emitter.fields.lifetime]
+ui = { min = 0.01, max = 30, step = 0.1 }
+
+[components.particle_emitter.fields.speed]
+ui = { min = 0, max = 100, step = 0.5 }
+
+[components.spawner_config]
+display_name = "Spawner Config"
+category = "gameplay"
+
+[components.spawner_config.fields.spawn_interval]
+ui = { min = 0.1, max = 60, step = 0.5 }
+
+[components.spawner_config.fields.spawn_radius]
+ui = { min = 1, max = 100, step = 1 }
+
+[components.spawner_config.fields.max_enemies]
+ui = { min = 1, max = 100, step = 1 }
+
+# ---------- Runtime-only components (not in map JSON) ----------
+
+[runtime_only_components]
+list = [
+    "Velocity",
+    "MeshHandle",
+    "MaterialHandle",
+    "Camera",
+    "Player",
+    "PlayerInput",
+    "MovementState",
+    "CharacterControllerTag",
+    "Weapon",
+    "Projectile",
+    "DestroyAfter",
+    "Particle",
+    "AudioSource",
+    "HUDState",
+    "SpawnerState",
+    "Enemy",
+]
+
+# ---------- Synthetic components (map concepts, not C++ structs) ----------
+
+[synthetic_components.material]
+display_name = "Material"
+category = "rendering"
+
+[synthetic_components.material.fields.base_color]
+type = "rgba"
+default = [1, 1, 1, 1]
+
+[synthetic_components.material.fields.emissive]
+type = "rgba"
+default = [0, 0, 0, 0]
+
+[synthetic_components.material.fields.roughness]
+type = "float"
+default = 0.5
+ui = { min = 0, max = 1, step = 0.01 }
+
+[synthetic_components.material.fields.metallic]
+type = "float"
+default = 0.0
+ui = { min = 0, max = 1, step = 0.01 }
+
+[synthetic_components.physics]
+display_name = "Physics"
+category = "physics"
+
+[synthetic_components.physics.fields.type]
+type = "PhysicsType"
+default = "static"
+
+[synthetic_components.physics.fields.shape]
+type = "PhysicsShape"
+default = "box"
+
+[synthetic_components.physics.fields.half_extents]
+type = "vec3"
+default = [0.5, 0.5, 0.5]
+condition = "shape == box"
+ui = { min = 0.01, max = 100, step = 0.1 }
+
+[synthetic_components.physics.fields.radius]
+type = "float"
+default = 0.5
+condition = "shape == sphere"
+ui = { min = 0.01, max = 100, step = 0.1 }
+
+# ---------- Additional enums (not in C++ headers) ----------
+
+[synthetic_enums.PhysicsType]
+values = ["static", "dynamic"]
+default = "static"
+
+[synthetic_enums.PhysicsShape]
+values = ["box", "sphere"]
+default = "box"
+
+[synthetic_enums.MeshType]
+values = ["cube", "plane", "humanoid"]
+default = "cube"
+
+# ---------- Tags ----------
+
+[tags.Enemy]
+display_name = "Enemy"
+
+# ---------- Entity types ----------
+
+[entity_types.geometry]
+display_name = "Geometry"
+default_components = ["transform", "material", "physics"]
+default_mesh = "cube"
+
+[entity_types.point_light]
+display_name = "Point Light"
+default_components = ["transform", "point_light"]
+
+[entity_types.directional_light]
+display_name = "Directional Light"
+default_components = ["transform", "directional_light"]
+
+[entity_types.player_spawn]
+display_name = "Player Spawn"
+default_components = ["transform"]
+
+[entity_types.enemy_spawn]
+display_name = "Enemy Spawn"
+default_components = ["transform", "health", "ai_state"]
+
+[entity_types.destructible]
+display_name = "Destructible"
+default_components = ["transform", "material", "physics", "health"]
+default_mesh = "cube"
+
+[entity_types.spawner]
+display_name = "Spawner"
+default_components = ["transform", "spawner_config"]
+
+[entity_types.particle_emitter]
+display_name = "Particle Emitter"
+default_components = ["transform", "particle_emitter"]
+
+# ---------- Map settings ----------
+
+[map_settings.ambient_color]
+type = "rgba"
+default = [0.1, 0.1, 0.15, 1]
+
+[map_settings.gravity]
+type = "vec3"
+default = [0, -9.81, 0]

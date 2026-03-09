@@ -90,11 +90,20 @@ target_link_libraries(mortar PRIVATE
     glfw
     vk-bootstrap::vk-bootstrap
     GPUOpen::VulkanMemoryAllocator
-    Vulkan::Vulkan
     imgui::imgui
 )
 
+target_link_libraries(mortar PRIVATE Vulkan::Vulkan)
+
 if(UNIX AND NOT APPLE)
+    # On Linux, prefer the system Vulkan loader at runtime (Mesa's loader has
+    # proper ICD support for WSL/d3d12). Prepend /usr/lib to RPATH so the
+    # system libvulkan.so is found before vcpkg's copy.
+    set_target_properties(mortar PROPERTIES
+        BUILD_RPATH "/usr/lib/x86_64-linux-gnu;${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/debug/lib"
+        INSTALL_RPATH "/usr/lib/x86_64-linux-gnu"
+    )
+
     find_package(X11 REQUIRED)
     target_link_libraries(mortar PRIVATE
         X11::X11

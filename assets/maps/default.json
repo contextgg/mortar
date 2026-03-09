@@ -1,0 +1,2891 @@
+{
+  "version": 1,
+  "settings": {
+    "ambient_color": [
+      0.1,
+      0.1,
+      0.15
+    ],
+    "gravity": [
+      0,
+      -9.81,
+      0
+    ]
+  },
+  "entities": [
+    {
+      "name": "PlayerSpawn",
+      "type": "player_spawn",
+      "transform": {
+        "position": [
+          0,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "name": "Sun",
+      "type": "geometry",
+      "directional_light": {
+        "direction": [
+          -0.4,
+          -0.8,
+          -0.4
+        ],
+        "color": [
+          1.0,
+          0.95,
+          0.85
+        ],
+        "intensity": 1.2
+      }
+    },
+    {
+      "name": "PointLight1",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          3,
+          3,
+          3
+        ]
+      },
+      "point_light": {
+        "color": [
+          0.4,
+          0.6,
+          1.0
+        ],
+        "intensity": 2.0,
+        "radius": 15.0
+      }
+    },
+    {
+      "name": "Ground",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "mesh": "plane",
+      "material": {
+        "base_color": [
+          0.35,
+          0.55,
+          0.3,
+          1.0
+        ],
+        "roughness": 0.9
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          50,
+          0.1,
+          50
+        ]
+      }
+    },
+    {
+      "name": "WallNorth",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          0,
+          2,
+          -50
+        ],
+        "scale": [
+          100,
+          4,
+          0.5
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.5,
+          0.5,
+          0.55,
+          1.0
+        ],
+        "roughness": 0.8
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          50,
+          2,
+          0.25
+        ]
+      }
+    },
+    {
+      "name": "WallSouth",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          0,
+          2,
+          50
+        ],
+        "scale": [
+          100,
+          4,
+          0.5
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.5,
+          0.5,
+          0.55,
+          1.0
+        ],
+        "roughness": 0.8
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          50,
+          2,
+          0.25
+        ]
+      }
+    },
+    {
+      "name": "WallEast",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          50,
+          2,
+          0
+        ],
+        "scale": [
+          0.5,
+          4,
+          100
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.5,
+          0.5,
+          0.55,
+          1.0
+        ],
+        "roughness": 0.8
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.25,
+          2,
+          50
+        ]
+      }
+    },
+    {
+      "name": "WallWest",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -50,
+          2,
+          0
+        ],
+        "scale": [
+          0.5,
+          4,
+          100
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.5,
+          0.5,
+          0.55,
+          1.0
+        ],
+        "roughness": 0.8
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.25,
+          2,
+          50
+        ]
+      }
+    },
+    {
+      "name": "RedCube",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -3,
+          0.5,
+          -3
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.9,
+          0.2,
+          0.2,
+          1.0
+        ],
+        "roughness": 0.4,
+        "metallic": 0.3
+      },
+      "health": {
+        "current": 50,
+        "max": 50
+      },
+      "angular_velocity": {
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "speed": 1.5
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "BlueCube",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          4,
+          0.5,
+          -2
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.2,
+          0.3,
+          0.9,
+          1.0
+        ],
+        "roughness": 0.3,
+        "metallic": 0.5
+      },
+      "health": {
+        "current": 50,
+        "max": 50
+      },
+      "angular_velocity": {
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "speed": 1.0
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "TargetCube_0",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -8,
+          0.5,
+          -8
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.5,
+          0.3,
+          0.7,
+          1.0
+        ],
+        "roughness": 0.2,
+        "metallic": 0.0
+      },
+      "health": {
+        "current": 30,
+        "max": 30
+      },
+      "angular_velocity": {
+        "axis": [
+          0.3,
+          1.0,
+          0.2
+        ],
+        "speed": 0.5
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.4,
+          0.4,
+          0.4
+        ]
+      }
+    },
+    {
+      "name": "TargetCube_1",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -4,
+          0.5,
+          -8
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.6,
+          0.3,
+          0.6,
+          1.0
+        ],
+        "roughness": 0.35,
+        "metallic": 0.1
+      },
+      "health": {
+        "current": 30,
+        "max": 30
+      },
+      "angular_velocity": {
+        "axis": [
+          0.3,
+          1.0,
+          0.2
+        ],
+        "speed": 0.8
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.4,
+          0.4,
+          0.4
+        ]
+      }
+    },
+    {
+      "name": "TargetCube_2",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          0,
+          0.5,
+          -8
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.7,
+          0.3,
+          0.5,
+          1.0
+        ],
+        "roughness": 0.5,
+        "metallic": 0.2
+      },
+      "health": {
+        "current": 30,
+        "max": 30
+      },
+      "angular_velocity": {
+        "axis": [
+          0.3,
+          1.0,
+          0.2
+        ],
+        "speed": 1.1
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.4,
+          0.4,
+          0.4
+        ]
+      }
+    },
+    {
+      "name": "TargetCube_3",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          4,
+          0.5,
+          -8
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.8,
+          0.3,
+          0.4,
+          1.0
+        ],
+        "roughness": 0.65,
+        "metallic": 0.3
+      },
+      "health": {
+        "current": 30,
+        "max": 30
+      },
+      "angular_velocity": {
+        "axis": [
+          0.3,
+          1.0,
+          0.2
+        ],
+        "speed": 1.4
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.4,
+          0.4,
+          0.4
+        ]
+      }
+    },
+    {
+      "name": "TargetCube_4",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          8,
+          0.5,
+          -8
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.9,
+          0.3,
+          0.3,
+          1.0
+        ],
+        "roughness": 0.8,
+        "metallic": 0.4
+      },
+      "health": {
+        "current": 30,
+        "max": 30
+      },
+      "angular_velocity": {
+        "axis": [
+          0.3,
+          1.0,
+          0.2
+        ],
+        "speed": 1.7
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.4,
+          0.4,
+          0.4
+        ]
+      }
+    },
+    {
+      "name": "EnemySpawner",
+      "type": "geometry",
+      "spawner_config": {
+        "spawn_interval": 4.0,
+        "spawn_radius": 15.0,
+        "max_count": 10,
+        "enemy_mesh": "cube",
+        "enemy_material": {
+          "base_color": [
+            0.8,
+            0.15,
+            0.1,
+            1.0
+          ],
+          "roughness": 0.6,
+          "metallic": 0.1
+        }
+      }
+    },
+    {
+      "name": "Enemy1",
+      "type": "enemy_spawn",
+      "transform": {
+        "position": [
+          8,
+          0.5,
+          -5
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.8,
+          0.15,
+          0.1,
+          1.0
+        ],
+        "roughness": 0.6,
+        "metallic": 0.1
+      },
+      "health": {
+        "current": 40,
+        "max": 40
+      },
+      "ai_state": {
+        "state": "idle",
+        "detect_range": 15.0,
+        "attack_range": 2.0,
+        "move_speed": 3.0,
+        "attack_cooldown": 1.5
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "Enemy2",
+      "type": "enemy_spawn",
+      "transform": {
+        "position": [
+          -6,
+          0.5,
+          -8
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.8,
+          0.15,
+          0.1,
+          1.0
+        ],
+        "roughness": 0.6,
+        "metallic": 0.1
+      },
+      "health": {
+        "current": 40,
+        "max": 40
+      },
+      "ai_state": {
+        "state": "idle",
+        "detect_range": 15.0,
+        "attack_range": 2.0,
+        "move_speed": 3.0,
+        "attack_cooldown": 1.5
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "Enemy3",
+      "type": "enemy_spawn",
+      "transform": {
+        "position": [
+          3,
+          0.5,
+          -12
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.8,
+          0.15,
+          0.1,
+          1.0
+        ],
+        "roughness": 0.6,
+        "metallic": 0.1
+      },
+      "health": {
+        "current": 40,
+        "max": 40
+      },
+      "ai_state": {
+        "state": "idle",
+        "detect_range": 15.0,
+        "attack_range": 2.0,
+        "move_speed": 3.0,
+        "attack_cooldown": 1.5
+      },
+      "physics": {
+        "shape": "box",
+        "type": "static",
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "Grass_0",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          12.55,
+          0.22,
+          -42.75
+        ],
+        "scale": [
+          0.096,
+          0.438,
+          0.096
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.347,
+          0.619,
+          0.284,
+          1.0
+        ],
+        "roughness": 0.72
+      }
+    },
+    {
+      "name": "Grass_1",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -7.03,
+          0.2,
+          -42.32
+        ],
+        "scale": [
+          0.115,
+          0.409,
+          0.115
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.205,
+          0.5,
+          0.247,
+          1.0
+        ],
+        "roughness": 0.84
+      }
+    },
+    {
+      "name": "Grass_2",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -25.16,
+          0.35,
+          8.03
+        ],
+        "scale": [
+          0.08,
+          0.705,
+          0.08
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.361,
+          0.625,
+          0.201,
+          1.0
+        ],
+        "roughness": 0.74
+      }
+    },
+    {
+      "name": "Grass_3",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          41.15,
+          0.17,
+          -14.71
+        ],
+        "scale": [
+          0.087,
+          0.346,
+          0.087
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.369,
+          0.601,
+          0.271,
+          1.0
+        ],
+        "roughness": 0.88
+      }
+    },
+    {
+      "name": "Grass_4",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          3.26,
+          0.24,
+          42.58
+        ],
+        "scale": [
+          0.119,
+          0.489,
+          0.119
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.366,
+          0.605,
+          0.279,
+          1.0
+        ],
+        "roughness": 0.84
+      }
+    },
+    {
+      "name": "Grass_5",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          18.41,
+          0.21,
+          -40.88
+        ],
+        "scale": [
+          0.1,
+          0.414,
+          0.1
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.216,
+          0.508,
+          0.165,
+          1.0
+        ],
+        "roughness": 0.77
+      }
+    },
+    {
+      "name": "Grass_6",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          12.21,
+          0.24,
+          -12.17
+        ],
+        "scale": [
+          0.095,
+          0.485,
+          0.095
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.253,
+          0.684,
+          0.247,
+          1.0
+        ],
+        "roughness": 0.85
+      }
+    },
+    {
+      "name": "Grass_7",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -29.6,
+          0.19,
+          20.62
+        ],
+        "scale": [
+          0.107,
+          0.382,
+          0.107
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.398,
+          0.61,
+          0.234,
+          1.0
+        ],
+        "roughness": 0.87
+      }
+    },
+    {
+      "name": "Grass_8",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          30.86,
+          0.21,
+          24.84
+        ],
+        "scale": [
+          0.082,
+          0.415,
+          0.082
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.263,
+          0.517,
+          0.182,
+          1.0
+        ],
+        "roughness": 0.94
+      }
+    },
+    {
+      "name": "Grass_9",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          33.87,
+          0.31,
+          -16.68
+        ],
+        "scale": [
+          0.108,
+          0.628,
+          0.108
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.383,
+          0.565,
+          0.19,
+          1.0
+        ],
+        "roughness": 0.76
+      }
+    },
+    {
+      "name": "Grass_10",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          5.52,
+          0.3,
+          -21.35
+        ],
+        "scale": [
+          0.143,
+          0.592,
+          0.143
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.28,
+          0.505,
+          0.3,
+          1.0
+        ],
+        "roughness": 0.83
+      }
+    },
+    {
+      "name": "Grass_11",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -36.82,
+          0.18,
+          -40.76
+        ],
+        "scale": [
+          0.124,
+          0.355,
+          0.124
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.358,
+          0.556,
+          0.16,
+          1.0
+        ],
+        "roughness": 0.8
+      }
+    },
+    {
+      "name": "Grass_12",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          44.65,
+          0.39,
+          2.62
+        ],
+        "scale": [
+          0.14,
+          0.786,
+          0.14
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.202,
+          0.63,
+          0.252,
+          1.0
+        ],
+        "roughness": 0.83
+      }
+    },
+    {
+      "name": "Grass_13",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -20.99,
+          0.18,
+          12.69
+        ],
+        "scale": [
+          0.11,
+          0.356,
+          0.11
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.291,
+          0.688,
+          0.281,
+          1.0
+        ],
+        "roughness": 0.77
+      }
+    },
+    {
+      "name": "Grass_14",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          0.05,
+          0.38,
+          -28.92
+        ],
+        "scale": [
+          0.141,
+          0.756,
+          0.141
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.26,
+          0.61,
+          0.241,
+          1.0
+        ],
+        "roughness": 0.74
+      }
+    },
+    {
+      "name": "Grass_15",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          23.63,
+          0.34,
+          3.54
+        ],
+        "scale": [
+          0.117,
+          0.689,
+          0.117
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.2,
+          0.531,
+          0.153,
+          1.0
+        ],
+        "roughness": 0.93
+      }
+    },
+    {
+      "name": "Grass_16",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          34.08,
+          0.23,
+          29.85
+        ],
+        "scale": [
+          0.084,
+          0.454,
+          0.084
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.376,
+          0.687,
+          0.163,
+          1.0
+        ],
+        "roughness": 0.82
+      }
+    },
+    {
+      "name": "Grass_17",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -38.77,
+          0.34,
+          23.45
+        ],
+        "scale": [
+          0.089,
+          0.683,
+          0.089
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.295,
+          0.587,
+          0.19,
+          1.0
+        ],
+        "roughness": 0.92
+      }
+    },
+    {
+      "name": "Grass_18",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -6.92,
+          0.28,
+          -25.94
+        ],
+        "scale": [
+          0.131,
+          0.57,
+          0.131
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.24,
+          0.528,
+          0.299,
+          1.0
+        ],
+        "roughness": 0.86
+      }
+    },
+    {
+      "name": "Grass_19",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -5.57,
+          0.18,
+          1.58
+        ],
+        "scale": [
+          0.096,
+          0.361,
+          0.096
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.268,
+          0.597,
+          0.185,
+          1.0
+        ],
+        "roughness": 0.76
+      }
+    },
+    {
+      "name": "Grass_20",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -38.61,
+          0.21,
+          11.8
+        ],
+        "scale": [
+          0.143,
+          0.414,
+          0.143
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.372,
+          0.468,
+          0.186,
+          1.0
+        ],
+        "roughness": 0.87
+      }
+    },
+    {
+      "name": "Grass_21",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -25.72,
+          0.38,
+          -33.09
+        ],
+        "scale": [
+          0.12,
+          0.768,
+          0.12
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.295,
+          0.646,
+          0.271,
+          1.0
+        ],
+        "roughness": 0.75
+      }
+    },
+    {
+      "name": "Grass_22",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -36.28,
+          0.26,
+          -6.21
+        ],
+        "scale": [
+          0.113,
+          0.512,
+          0.113
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.346,
+          0.618,
+          0.298,
+          1.0
+        ],
+        "roughness": 0.72
+      }
+    },
+    {
+      "name": "Grass_23",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -8.76,
+          0.37,
+          -14.46
+        ],
+        "scale": [
+          0.097,
+          0.731,
+          0.097
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.238,
+          0.562,
+          0.213,
+          1.0
+        ],
+        "roughness": 0.77
+      }
+    },
+    {
+      "name": "Grass_24",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -22.52,
+          0.26,
+          38.09
+        ],
+        "scale": [
+          0.14,
+          0.522,
+          0.14
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.31,
+          0.463,
+          0.3,
+          1.0
+        ],
+        "roughness": 0.91
+      }
+    },
+    {
+      "name": "Grass_25",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          42.21,
+          0.36,
+          38.37
+        ],
+        "scale": [
+          0.092,
+          0.724,
+          0.092
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.297,
+          0.503,
+          0.21,
+          1.0
+        ],
+        "roughness": 0.71
+      }
+    },
+    {
+      "name": "Grass_26",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -10.89,
+          0.22,
+          43.68
+        ],
+        "scale": [
+          0.135,
+          0.433,
+          0.135
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.291,
+          0.556,
+          0.294,
+          1.0
+        ],
+        "roughness": 0.95
+      }
+    },
+    {
+      "name": "Grass_27",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          5.02,
+          0.19,
+          19.66
+        ],
+        "scale": [
+          0.101,
+          0.377,
+          0.101
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.394,
+          0.595,
+          0.231,
+          1.0
+        ],
+        "roughness": 0.89
+      }
+    },
+    {
+      "name": "Grass_28",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -39.86,
+          0.28,
+          7.58
+        ],
+        "scale": [
+          0.14,
+          0.551,
+          0.14
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.231,
+          0.69,
+          0.162,
+          1.0
+        ],
+        "roughness": 0.75
+      }
+    },
+    {
+      "name": "Grass_29",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          8.55,
+          0.21,
+          15.77
+        ],
+        "scale": [
+          0.088,
+          0.418,
+          0.088
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.378,
+          0.512,
+          0.239,
+          1.0
+        ],
+        "roughness": 0.85
+      }
+    },
+    {
+      "name": "Grass_30",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -7.27,
+          0.28,
+          7.53
+        ],
+        "scale": [
+          0.145,
+          0.561,
+          0.145
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.241,
+          0.629,
+          0.186,
+          1.0
+        ],
+        "roughness": 0.8
+      }
+    },
+    {
+      "name": "Grass_31",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          15.45,
+          0.23,
+          -18.0
+        ],
+        "scale": [
+          0.133,
+          0.458,
+          0.133
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.215,
+          0.565,
+          0.3,
+          1.0
+        ],
+        "roughness": 0.95
+      }
+    },
+    {
+      "name": "Grass_32",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -38.41,
+          0.22,
+          -25.82
+        ],
+        "scale": [
+          0.145,
+          0.433,
+          0.145
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.376,
+          0.67,
+          0.205,
+          1.0
+        ],
+        "roughness": 0.74
+      }
+    },
+    {
+      "name": "Grass_33",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          30.04,
+          0.3,
+          18.32
+        ],
+        "scale": [
+          0.149,
+          0.606,
+          0.149
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.331,
+          0.452,
+          0.273,
+          1.0
+        ],
+        "roughness": 0.77
+      }
+    },
+    {
+      "name": "Grass_34",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          14.7,
+          0.18,
+          39.5
+        ],
+        "scale": [
+          0.088,
+          0.367,
+          0.088
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.221,
+          0.588,
+          0.191,
+          1.0
+        ],
+        "roughness": 0.85
+      }
+    },
+    {
+      "name": "Grass_35",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          19.59,
+          0.31,
+          -26.68
+        ],
+        "scale": [
+          0.098,
+          0.617,
+          0.098
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.298,
+          0.676,
+          0.277,
+          1.0
+        ],
+        "roughness": 0.72
+      }
+    },
+    {
+      "name": "Grass_36",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -6.88,
+          0.15,
+          -20.1
+        ],
+        "scale": [
+          0.134,
+          0.302,
+          0.134
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.327,
+          0.515,
+          0.261,
+          1.0
+        ],
+        "roughness": 0.84
+      }
+    },
+    {
+      "name": "Grass_37",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -6.51,
+          0.17,
+          -44.13
+        ],
+        "scale": [
+          0.142,
+          0.338,
+          0.142
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.381,
+          0.586,
+          0.275,
+          1.0
+        ],
+        "roughness": 0.85
+      }
+    },
+    {
+      "name": "Grass_38",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -31.67,
+          0.23,
+          -33.53
+        ],
+        "scale": [
+          0.143,
+          0.454,
+          0.143
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.359,
+          0.665,
+          0.285,
+          1.0
+        ],
+        "roughness": 0.75
+      }
+    },
+    {
+      "name": "Grass_39",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -22.54,
+          0.35,
+          -35.75
+        ],
+        "scale": [
+          0.142,
+          0.69,
+          0.142
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.281,
+          0.605,
+          0.173,
+          1.0
+        ],
+        "roughness": 0.93
+      }
+    },
+    {
+      "name": "Grass_40",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          32.81,
+          0.35,
+          42.86
+        ],
+        "scale": [
+          0.142,
+          0.705,
+          0.142
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.205,
+          0.634,
+          0.2,
+          1.0
+        ],
+        "roughness": 0.93
+      }
+    },
+    {
+      "name": "Grass_41",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          27.2,
+          0.35,
+          32.77
+        ],
+        "scale": [
+          0.099,
+          0.705,
+          0.099
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.357,
+          0.477,
+          0.281,
+          1.0
+        ],
+        "roughness": 0.91
+      }
+    },
+    {
+      "name": "Grass_42",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -24.98,
+          0.27,
+          28.49
+        ],
+        "scale": [
+          0.101,
+          0.53,
+          0.101
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.359,
+          0.507,
+          0.154,
+          1.0
+        ],
+        "roughness": 0.75
+      }
+    },
+    {
+      "name": "Grass_43",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -15.46,
+          0.39,
+          32.79
+        ],
+        "scale": [
+          0.1,
+          0.783,
+          0.1
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.328,
+          0.55,
+          0.297,
+          1.0
+        ],
+        "roughness": 0.83
+      }
+    },
+    {
+      "name": "Grass_44",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          39.53,
+          0.39,
+          -34.62
+        ],
+        "scale": [
+          0.092,
+          0.785,
+          0.092
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.393,
+          0.516,
+          0.166,
+          1.0
+        ],
+        "roughness": 0.81
+      }
+    },
+    {
+      "name": "Grass_45",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          20.57,
+          0.3,
+          -16.77
+        ],
+        "scale": [
+          0.116,
+          0.603,
+          0.116
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.277,
+          0.594,
+          0.188,
+          1.0
+        ],
+        "roughness": 0.88
+      }
+    },
+    {
+      "name": "Grass_46",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -44.85,
+          0.28,
+          38.3
+        ],
+        "scale": [
+          0.13,
+          0.569,
+          0.13
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.348,
+          0.618,
+          0.205,
+          1.0
+        ],
+        "roughness": 0.72
+      }
+    },
+    {
+      "name": "Grass_47",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          14.78,
+          0.23,
+          -15.28
+        ],
+        "scale": [
+          0.139,
+          0.457,
+          0.139
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.344,
+          0.525,
+          0.196,
+          1.0
+        ],
+        "roughness": 0.8
+      }
+    },
+    {
+      "name": "Grass_48",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -8.78,
+          0.18,
+          -18.39
+        ],
+        "scale": [
+          0.109,
+          0.364,
+          0.109
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.388,
+          0.619,
+          0.285,
+          1.0
+        ],
+        "roughness": 0.85
+      }
+    },
+    {
+      "name": "Grass_49",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -17.91,
+          0.15,
+          4.31
+        ],
+        "scale": [
+          0.1,
+          0.3,
+          0.1
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.286,
+          0.595,
+          0.248,
+          1.0
+        ],
+        "roughness": 0.82
+      }
+    },
+    {
+      "name": "Grass_50",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -5.21,
+          0.27,
+          -25.77
+        ],
+        "scale": [
+          0.143,
+          0.537,
+          0.143
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.359,
+          0.492,
+          0.163,
+          1.0
+        ],
+        "roughness": 0.83
+      }
+    },
+    {
+      "name": "Grass_51",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          11.96,
+          0.35,
+          -14.83
+        ],
+        "scale": [
+          0.133,
+          0.709,
+          0.133
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.335,
+          0.506,
+          0.18,
+          1.0
+        ],
+        "roughness": 0.71
+      }
+    },
+    {
+      "name": "Grass_52",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -22.96,
+          0.36,
+          -2.24
+        ],
+        "scale": [
+          0.085,
+          0.725,
+          0.085
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.283,
+          0.607,
+          0.179,
+          1.0
+        ],
+        "roughness": 0.87
+      }
+    },
+    {
+      "name": "Grass_53",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -0.51,
+          0.31,
+          -23.04
+        ],
+        "scale": [
+          0.08,
+          0.628,
+          0.08
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.35,
+          0.643,
+          0.166,
+          1.0
+        ],
+        "roughness": 0.81
+      }
+    },
+    {
+      "name": "Grass_54",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -29.17,
+          0.28,
+          41.22
+        ],
+        "scale": [
+          0.084,
+          0.559,
+          0.084
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.25,
+          0.662,
+          0.218,
+          1.0
+        ],
+        "roughness": 0.9
+      }
+    },
+    {
+      "name": "Grass_55",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          15.08,
+          0.3,
+          43.91
+        ],
+        "scale": [
+          0.147,
+          0.598,
+          0.147
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.378,
+          0.603,
+          0.258,
+          1.0
+        ],
+        "roughness": 0.83
+      }
+    },
+    {
+      "name": "Grass_56",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          29.75,
+          0.37,
+          4.31
+        ],
+        "scale": [
+          0.132,
+          0.749,
+          0.132
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.295,
+          0.515,
+          0.187,
+          1.0
+        ],
+        "roughness": 0.86
+      }
+    },
+    {
+      "name": "Grass_57",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          23.92,
+          0.31,
+          1.92
+        ],
+        "scale": [
+          0.099,
+          0.613,
+          0.099
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.215,
+          0.521,
+          0.191,
+          1.0
+        ],
+        "roughness": 0.78
+      }
+    },
+    {
+      "name": "Grass_58",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          3.61,
+          0.21,
+          -32.55
+        ],
+        "scale": [
+          0.129,
+          0.416,
+          0.129
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.341,
+          0.466,
+          0.211,
+          1.0
+        ],
+        "roughness": 0.84
+      }
+    },
+    {
+      "name": "Grass_59",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -7.58,
+          0.26,
+          -26.38
+        ],
+        "scale": [
+          0.143,
+          0.51,
+          0.143
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.317,
+          0.624,
+          0.279,
+          1.0
+        ],
+        "roughness": 0.89
+      }
+    },
+    {
+      "name": "Rock_0",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -9.57,
+          0.11,
+          -39.53
+        ],
+        "scale": [
+          0.341,
+          0.213,
+          0.456
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.588,
+          0.559,
+          0.53,
+          1.0
+        ],
+        "roughness": 0.88
+      }
+    },
+    {
+      "name": "Rock_1",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          19.8,
+          0.07,
+          3.69
+        ],
+        "scale": [
+          0.441,
+          0.133,
+          0.266
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.459,
+          0.436,
+          0.413,
+          1.0
+        ],
+        "roughness": 0.81
+      }
+    },
+    {
+      "name": "Rock_2",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -13.11,
+          0.06,
+          14.33
+        ],
+        "scale": [
+          0.362,
+          0.125,
+          0.34
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.382,
+          0.363,
+          0.344,
+          1.0
+        ],
+        "roughness": 0.92
+      }
+    },
+    {
+      "name": "Rock_3",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -37.84,
+          0.05,
+          -8.48
+        ],
+        "scale": [
+          0.426,
+          0.104,
+          0.393
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.384,
+          0.365,
+          0.346,
+          1.0
+        ],
+        "roughness": 0.89
+      }
+    },
+    {
+      "name": "Rock_4",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -35.98,
+          0.07,
+          -9.67
+        ],
+        "scale": [
+          0.285,
+          0.149,
+          0.428
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.445,
+          0.423,
+          0.4,
+          1.0
+        ],
+        "roughness": 0.95
+      }
+    },
+    {
+      "name": "Rock_5",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          26.55,
+          0.05,
+          -19.82
+        ],
+        "scale": [
+          0.233,
+          0.103,
+          0.362
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.6,
+          0.57,
+          0.54,
+          1.0
+        ],
+        "roughness": 0.87
+      }
+    },
+    {
+      "name": "Rock_6",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          12.01,
+          0.11,
+          22.5
+        ],
+        "scale": [
+          0.461,
+          0.213,
+          0.485
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.4,
+          0.38,
+          0.36,
+          1.0
+        ],
+        "roughness": 0.8
+      }
+    },
+    {
+      "name": "Rock_7",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -27.81,
+          0.09,
+          -29.9
+        ],
+        "scale": [
+          0.468,
+          0.185,
+          0.265
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.525,
+          0.499,
+          0.472,
+          1.0
+        ],
+        "roughness": 0.95
+      }
+    },
+    {
+      "name": "Rock_8",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -26.58,
+          0.06,
+          8.58
+        ],
+        "scale": [
+          0.499,
+          0.117,
+          0.446
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.591,
+          0.562,
+          0.532,
+          1.0
+        ],
+        "roughness": 0.82
+      }
+    },
+    {
+      "name": "Rock_9",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -37.95,
+          0.12,
+          -15.04
+        ],
+        "scale": [
+          0.471,
+          0.244,
+          0.319
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.529,
+          0.502,
+          0.476,
+          1.0
+        ],
+        "roughness": 0.82
+      }
+    },
+    {
+      "name": "Rock_10",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          15.25,
+          0.11,
+          10.18
+        ],
+        "scale": [
+          0.241,
+          0.216,
+          0.455
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.5,
+          0.475,
+          0.45,
+          1.0
+        ],
+        "roughness": 0.82
+      }
+    },
+    {
+      "name": "Rock_11",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          38.71,
+          0.08,
+          22.61
+        ],
+        "scale": [
+          0.339,
+          0.164,
+          0.311
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.476,
+          0.453,
+          0.429,
+          1.0
+        ],
+        "roughness": 0.87
+      }
+    },
+    {
+      "name": "Rock_12",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          27.97,
+          0.12,
+          25.79
+        ],
+        "scale": [
+          0.242,
+          0.244,
+          0.391
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.557,
+          0.529,
+          0.501,
+          1.0
+        ],
+        "roughness": 0.94
+      }
+    },
+    {
+      "name": "Rock_13",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -5.16,
+          0.07,
+          18.7
+        ],
+        "scale": [
+          0.586,
+          0.141,
+          0.442
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.485,
+          0.46,
+          0.436,
+          1.0
+        ],
+        "roughness": 0.9
+      }
+    },
+    {
+      "name": "Rock_14",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -5.15,
+          0.11,
+          18.48
+        ],
+        "scale": [
+          0.307,
+          0.228,
+          0.449
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.372,
+          0.353,
+          0.334,
+          1.0
+        ],
+        "roughness": 0.98
+      }
+    },
+    {
+      "name": "Rock_15",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -20.49,
+          0.08,
+          -2.82
+        ],
+        "scale": [
+          0.444,
+          0.157,
+          0.209
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.563,
+          0.535,
+          0.506,
+          1.0
+        ],
+        "roughness": 0.84
+      }
+    },
+    {
+      "name": "Rock_16",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -23.03,
+          0.12,
+          23.83
+        ],
+        "scale": [
+          0.336,
+          0.232,
+          0.41
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.419,
+          0.398,
+          0.377,
+          1.0
+        ],
+        "roughness": 0.8
+      }
+    },
+    {
+      "name": "Rock_17",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          35.85,
+          0.09,
+          -33.15
+        ],
+        "scale": [
+          0.488,
+          0.173,
+          0.427
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.523,
+          0.497,
+          0.47,
+          1.0
+        ],
+        "roughness": 0.93
+      }
+    },
+    {
+      "name": "Rock_18",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -0.73,
+          0.07,
+          23.43
+        ],
+        "scale": [
+          0.237,
+          0.133,
+          0.408
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.427,
+          0.405,
+          0.384,
+          1.0
+        ],
+        "roughness": 0.92
+      }
+    },
+    {
+      "name": "Rock_20",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -5.96,
+          0.1,
+          19.67
+        ],
+        "scale": [
+          0.332,
+          0.205,
+          0.281
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.413,
+          0.392,
+          0.372,
+          1.0
+        ],
+        "roughness": 0.82
+      }
+    },
+    {
+      "name": "Rock_21",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -24.59,
+          0.11,
+          -30.44
+        ],
+        "scale": [
+          0.414,
+          0.214,
+          0.256
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.404,
+          0.384,
+          0.364,
+          1.0
+        ],
+        "roughness": 0.9
+      }
+    },
+    {
+      "name": "Rock_22",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          17.97,
+          0.07,
+          38.13
+        ],
+        "scale": [
+          0.41,
+          0.142,
+          0.23
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.399,
+          0.379,
+          0.359,
+          1.0
+        ],
+        "roughness": 0.85
+      }
+    },
+    {
+      "name": "Rock_23",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -25.64,
+          0.07,
+          -38.87
+        ],
+        "scale": [
+          0.414,
+          0.141,
+          0.492
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.488,
+          0.464,
+          0.44,
+          1.0
+        ],
+        "roughness": 0.94
+      }
+    },
+    {
+      "name": "Rock_24",
+      "type": "geometry",
+      "transform": {
+        "position": [
+          -29.9,
+          0.12,
+          29.48
+        ],
+        "scale": [
+          0.396,
+          0.231,
+          0.372
+        ]
+      },
+      "mesh": "cube",
+      "material": {
+        "base_color": [
+          0.467,
+          0.444,
+          0.421,
+          1.0
+        ],
+        "roughness": 0.89
+      }
+    }
+  ]
+}

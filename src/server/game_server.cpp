@@ -287,8 +287,8 @@ void GameServer::broadcast_snapshot() {
         auto& ps = snapshot.players[snapshot.player_count];
         ps.slot = i;
 
-        const auto* transform = _slots[i].entity.get<Transform>();
-        const auto* health = _slots[i].entity.get<Health>();
+        const auto* transform = _slots[i].entity.try_get<Transform>();
+        const auto* health = _slots[i].entity.try_get<Health>();
 
         if (transform) {
             ps.position = transform->position;
@@ -332,10 +332,10 @@ void GameServer::on_player_connect(uint8_t slot, const std::string& token) {
 
     auto entity = _world.entity()
         .set(Transform{.position = spawn_pos})
-        .set(Player{})
+        .add<Player>()
         .set(PlayerInput{})
         .set(MovementState{})
-        .set(CharacterControllerTag{})
+        .add<CharacterControllerTag>()
         .set(Health{.current = 100.0f, .max = 100.0f});
 
     _slots[slot].entity = entity;
