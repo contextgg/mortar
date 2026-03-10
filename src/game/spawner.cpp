@@ -1,16 +1,18 @@
 #include "game/spawner.h"
 #include "game/enemy.h"
 #include "ecs/components.h"
-#include "physics/physics_world.h"
 
 #include <cmath>
 #include <cstdlib>
 
-void register_spawner_system(flecs::world& world, PhysicsWorld& physics) {
+void register_spawner_system(flecs::world& world) {
     world.system<SpawnerConfig, SpawnerState>("SpawnerSystem")
         .kind(flecs::OnUpdate)
-        .each([&world, &physics](SpawnerConfig& cfg, SpawnerState& state) {
-            state.timer -= world.delta_time();
+        .each([](flecs::entity e, SpawnerConfig& cfg, SpawnerState& state) {
+            auto world = e.world();
+            float dt = world.delta_time();
+
+            state.timer -= dt;
             if (state.timer > 0.0f) return;
 
             state.timer = cfg.spawn_interval;
@@ -25,9 +27,11 @@ void register_spawner_system(flecs::world& world, PhysicsWorld& physics) {
 
             // Find player position for spawn reference
             glm::vec3 player_pos{0.0f};
-            world.each([&player_pos](const Player&, const Transform& t) {
-                player_pos = t.position;
-            });
+            auto player = world.lookup("Player");
+            if (player.is_alive()) {
+                const auto* pt = player.try_get<Transform>();
+                if (pt) player_pos = pt->position;
+            }
 
             // Spawn at random position around player
             float angle = static_cast<float>(rand()) / RAND_MAX * 6.28318f;
@@ -38,6 +42,6 @@ void register_spawner_system(flecs::world& world, PhysicsWorld& physics) {
                 player_pos.z + std::sin(angle) * dist,
             };
 
-            create_enemy(world, physics, spawn_pos, cfg.enemy_mesh, cfg.enemy_material);
+            create_enemy(world, spawn_pos, cfg.enemy_mesh, cfg.enemy_material, cfg.enemy_skeleton);
         });
 }

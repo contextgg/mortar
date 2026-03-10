@@ -6,29 +6,72 @@
 #include "core/engine.h"
 #include "core/types.h"
 #include "renderer/mesh.h"
+#include "renderer/model_loader.h"
 
 using json = nlohmann::json;
 
-// Upload a mesh by name, caching to avoid duplicate uploads
-static uint32_t get_or_upload_mesh(const std::string& mesh_type, VulkanEngine& engine,
-                                   std::unordered_map<std::string, uint32_t>& cache) {
-    auto it = cache.find(mesh_type);
-    if (it != cache.end()) return it->second;
+// Cache for loaded glTF models (mesh index + texture material + optional skeleton)
+struct CachedModel {
+    uint32_t mesh_index = 0;
+    uint32_t material_index = 0; // textured material (0 = default)
+    std::shared_ptr<SkeletonData> skeleton;
+};
 
-    uint32_t index = 0;
-    if (mesh_type == "cube") {
-        index = engine.upload_mesh(cube_vertices(), cube_indices());
+static std::unordered_map<std::string, CachedModel> s_model_cache;
+
+// Upload a mesh by name, caching to avoid duplicate uploads.
+// If the mesh_type ends in .glb/.gltf, loads via glTF loader.
+static CachedModel get_or_upload_model(const std::string& mesh_type, VulkanEngine& engine,
+                                        std::unordered_map<std::string, uint32_t>& mesh_cache) {
+    // Check model cache first (for glTF models with skeleton data)
+    auto model_it = s_model_cache.find(mesh_type);
+    if (model_it != s_model_cache.end()) return model_it->second;
+
+    // Check mesh-only cache
+    auto it = mesh_cache.find(mesh_type);
+    if (it != mesh_cache.end()) return {it->second, 0, nullptr};
+
+    CachedModel result;
+
+    bool is_gltf = mesh_type.ends_with(".glb") || mesh_type.ends_with(".gltf");
+    if (is_gltf) {
+        auto model = load_gltf(mesh_type);
+        if (!model.vertices.empty()) {
+            result.mesh_index = engine.upload_mesh(model.vertices, model.indices);
+            result.skeleton = model.skeleton;
+            // Upload embedded texture and create a textured material
+            if (!model.textures.empty() && !model.textures[0].pixels.empty()) {
+                const auto& tex = model.textures[0];
+                uint32_t tex_idx = engine.upload_texture(tex.pixels.data(), tex.width, tex.height);
+                MaterialUBO props{};
+                props.base_color = glm::vec4(1.0f);
+                props.roughness = 0.5f;
+                result.material_index = engine.create_material(props, tex_idx);
+            }
+        } else {
+            std::cerr << "[map_loader] Failed to load model '" << mesh_type << "', defaulting to cube\n";
+            result.mesh_index = engine.upload_mesh(cube_vertices(), cube_indices());
+        }
+        s_model_cache[mesh_type] = result;
+    } else if (mesh_type == "cube") {
+        result.mesh_index = engine.upload_mesh(cube_vertices(), cube_indices());
     } else if (mesh_type == "plane") {
-        index = engine.upload_mesh(plane_vertices(50.0f, 10.0f), plane_indices());
+        result.mesh_index = engine.upload_mesh(plane_vertices(50.0f, 10.0f), plane_indices());
     } else if (mesh_type == "humanoid") {
-        index = engine.upload_mesh(humanoid_vertices(), humanoid_indices());
+        result.mesh_index = engine.upload_mesh(humanoid_vertices(), humanoid_indices());
     } else {
         std::cerr << "[map_loader] Unknown mesh type '" << mesh_type << "', defaulting to cube\n";
-        index = engine.upload_mesh(cube_vertices(), cube_indices());
+        result.mesh_index = engine.upload_mesh(cube_vertices(), cube_indices());
     }
 
-    cache[mesh_type] = index;
-    return index;
+    mesh_cache[mesh_type] = result.mesh_index;
+    return result;
+}
+
+// Legacy helper — returns just the mesh index
+static uint32_t get_or_upload_mesh(const std::string& mesh_type, VulkanEngine& engine,
+                                   std::unordered_map<std::string, uint32_t>& cache) {
+    return get_or_upload_model(mesh_type, engine, cache).mesh_index;
 }
 
 // Create a material from JSON data
@@ -47,7 +90,7 @@ static uint32_t create_material_from_json(const json& mat, VulkanEngine& engine)
 }
 
 MapLoadResult load_map(const std::filesystem::path& path, flecs::world& world,
-                       VulkanEngine& engine, PhysicsWorld& physics) {
+                       VulkanEngine& engine) {
     MapLoadResult result;
     json map_data;
 
@@ -55,10 +98,11 @@ MapLoadResult load_map(const std::filesystem::path& path, flecs::world& world,
         return result;
 
     // Load shared gameplay entities (physics, health, AI, spawners)
-    load_map_entities_shared(map_data["entities"], world, physics, result);
+    load_map_entities_shared(map_data["entities"], world, result);
 
     // Now load visual-only data: meshes, materials, lights, particles
     std::unordered_map<std::string, uint32_t> mesh_cache;
+    s_model_cache.clear();
 
     for (const auto& ent_data : map_data["entities"]) {
         std::string name = ent_data.value("name", "unnamed");
@@ -168,13 +212,19 @@ MapLoadResult load_map(const std::filesystem::path& path, flecs::world& world,
             entity.set(emitter);
         }
 
-        // SpawnerConfig — client needs mesh/material indices
+        // SpawnerConfig — client needs mesh/material indices + optional skeleton
         if (has_spawner && entity.has<SpawnerConfig>()) {
             const auto& sc = ent_data["spawner_config"];
             auto& config = entity.get_mut<SpawnerConfig>();
             if (sc.contains("enemy_mesh")) {
                 std::string mesh_type = sc["enemy_mesh"].get<std::string>();
-                config.enemy_mesh = get_or_upload_mesh(mesh_type, engine, mesh_cache);
+                auto model = get_or_upload_model(mesh_type, engine, mesh_cache);
+                config.enemy_mesh = model.mesh_index;
+                config.enemy_skeleton = model.skeleton;
+                // Use embedded texture material if no explicit material in map JSON
+                if (!sc.contains("enemy_material") && model.material_index != 0) {
+                    config.enemy_material = model.material_index;
+                }
             }
             if (sc.contains("enemy_material")) {
                 config.enemy_material = create_material_from_json(sc["enemy_material"], engine);

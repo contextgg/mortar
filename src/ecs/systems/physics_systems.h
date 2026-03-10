@@ -2,6 +2,4 @@
 
 #include <flecs.h>
 
-class PhysicsWorld;
-
-void register_physics_systems(flecs::world& world, PhysicsWorld& physics);
+void register_physics_systems(flecs::world& world);

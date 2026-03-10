@@ -81,6 +81,7 @@ add_executable(mortar
     src/renderer/model_loader.cpp
     src/renderer/particle_renderer.cpp
     src/renderer/imgui_renderer.cpp
+    src/animation/animation_system.cpp
     src/audio/audio_engine.cpp
     src/map/map_loader.cpp
     src/net/net_client.cpp

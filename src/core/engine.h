@@ -18,10 +18,14 @@ struct Renderable {
     glm::mat4 model;
     uint32_t mesh_index;
     uint32_t material_index;
+    uint32_t bone_offset = 0;
+    uint32_t bone_count = 0;
 };
 
 struct PushConstants {
     glm::mat4 model;
+    uint32_t bone_offset = 0;
+    uint32_t bone_count = 0;
 };
 
 class VulkanEngine {
@@ -39,13 +43,19 @@ public:
 
     uint32_t upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 
+    // Bone SSBO — upload bone matrices for skinned meshes, returns offset into SSBO
+    uint32_t upload_bones(const glm::mat4* matrices, uint32_t count);
+    void reset_bone_data();
+
     // Scene UBO — updated each frame by the SceneUBOUpdateSystem
     void update_scene_ubo(const SceneUBO& ubo);
 
     // Material creation — returns material index
     uint32_t create_material(const MaterialUBO& props, uint32_t albedo_texture = 0);
 
-    // Texture access
+    // Texture upload — returns texture index
+    uint32_t upload_texture(const uint8_t* pixels, int width, int height);
+    uint32_t load_texture(const std::string& path);
     uint32_t default_texture_index() const { return 0; }
 
     // Immediate GPU command submission (for uploads)
@@ -118,8 +128,16 @@ private:
     DescriptorAllocator _descriptor_allocator;
     VkDescriptorSetLayout _scene_set_layout = VK_NULL_HANDLE;
     VkDescriptorSetLayout _material_set_layout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout _bone_set_layout = VK_NULL_HANDLE;
     VkDescriptorSet _scene_descriptor_set = VK_NULL_HANDLE;
+    VkDescriptorSet _bone_descriptor_set = VK_NULL_HANDLE;
     AllocatedBuffer _scene_ubo_buffer;
+
+    // Bone SSBO for skeletal animation
+    static constexpr uint32_t MAX_BONE_MATRICES = 8192;
+    AllocatedBuffer _bone_ssbo;
+    void* _bone_ssbo_mapped = nullptr;
+    uint32_t _bone_write_offset = 0;
 
     // Commands
     VkCommandPool _command_pool = VK_NULL_HANDLE;

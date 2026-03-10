@@ -52,7 +52,8 @@ bool parse_map_file(const std::filesystem::path& path, json& out, MapLoadResult&
 }
 
 void load_map_entities_shared(const json& entities, flecs::world& world,
-                              PhysicsWorld& physics, MapLoadResult& result) {
+                              MapLoadResult& result) {
+    auto* physics = world.get<PhysicsRef>().ptr;
     for (const auto& ent_data : entities) {
         std::string name = ent_data.value("name", "unnamed");
         std::string type = ent_data.value("type", "geometry");
@@ -115,10 +116,10 @@ void load_map_entities_shared(const json& entities, flecs::world& world,
 
             if (shape == "box") {
                 glm::vec3 half_extents = read_vec3(phys["half_extents"], glm::vec3(0.5f));
-                physics.add_box(half_extents, pos, rot, is_static, eid);
+                physics->add_box(half_extents, pos, rot, is_static, eid);
             } else if (shape == "sphere") {
                 float radius = phys.value("radius", 0.5f);
-                physics.add_sphere(radius, pos, is_static, eid);
+                physics->add_sphere(radius, pos, is_static, eid);
             }
         }
 
@@ -179,15 +180,14 @@ void load_map_entities_shared(const json& entities, flecs::world& world,
     }
 }
 
-MapLoadResult load_map_server(const std::filesystem::path& path, flecs::world& world,
-                              PhysicsWorld& physics) {
+MapLoadResult load_map_server(const std::filesystem::path& path, flecs::world& world) {
     MapLoadResult result;
     json map_data;
 
     if (!parse_map_file(path, map_data, result))
         return result;
 
-    load_map_entities_shared(map_data["entities"], world, physics, result);
+    load_map_entities_shared(map_data["entities"], world, result);
     result.success = true;
     return result;
 }

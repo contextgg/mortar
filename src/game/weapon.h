@@ -21,3 +21,13 @@ inline Weapon make_rifle() {
         .max_ammo = 30,
     };
 }
+
+inline Weapon make_bow() {
+    return Weapon{
+        .fire_rate = 1.5f,
+        .damage = 40.0f,
+        .range = 80.0f,
+        .ammo = 15,
+        .max_ammo = 15,
+    };
+}

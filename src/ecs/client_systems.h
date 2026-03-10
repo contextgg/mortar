@@ -2,9 +2,6 @@
 
 #include <flecs.h>
 
-class VulkanEngine;
-class Input;
-class PhysicsWorld;
-
-// Register all systems for the client (shared + rendering + camera + particles + HUD)
-void register_client_systems(flecs::world& world, VulkanEngine& engine, Input& input, PhysicsWorld* physics = nullptr);
+// Register all client systems (shared + rendering + camera + particles + HUD + animation + effects).
+// Requires InputRef, PhysicsRef, EngineRef, AudioRef singletons to be set before calling.
+void register_client_systems(flecs::world& world);

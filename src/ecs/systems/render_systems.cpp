@@ -5,23 +5,27 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-void register_render_systems(flecs::world& world, VulkanEngine& engine) {
+void register_render_systems(flecs::world& world) {
     // SceneUBOUpdateSystem — builds SceneUBO from camera + lights
     world.system<const Transform, const Camera>("SceneUBOUpdateSystem")
         .kind(flecs::OnStore)
-        .each([&world, &engine](const Transform& cam_t, const Camera& cam) {
-            // Find player position for look-at target
+        .each([&world](const Transform& cam_t, const Camera& cam) {
+            auto* engine = world.get<EngineRef>().ptr;
+
+            // Look up player position for the look-at target
             glm::vec3 target_pos{0.0f};
-            world.each([&target_pos](const Player&, const Transform& pt) {
-                target_pos = pt.position;
-            });
+            auto player = world.lookup("Player");
+            if (player.is_alive()) {
+                const auto* pt = player.try_get<Transform>();
+                if (pt) target_pos = pt->position;
+            }
             glm::vec3 look_target = target_pos + cam.target_offset;
 
-            float aspect = static_cast<float>(engine.width()) / static_cast<float>(engine.height());
+            float aspect = static_cast<float>(engine->width()) / static_cast<float>(engine->height());
 
             glm::mat4 view = glm::lookAt(cam_t.position, look_target, glm::vec3(0, 1, 0));
             glm::mat4 projection = glm::perspective(glm::radians(cam.fov), aspect, cam.near_plane, cam.far_plane);
-            projection[1][1] *= -1; // Vulkan Y-flip
+            projection[1][1] *= -1;
 
             SceneUBO ubo{};
             ubo.view = view;
@@ -46,21 +50,34 @@ void register_render_systems(flecs::world& world, VulkanEngine& engine) {
             });
             ubo.num_point_lights = count;
 
-            engine.update_scene_ubo(ubo);
+            engine->update_scene_ubo(ubo);
         });
 
-    // RenderCollectSystem — pushes renderables to engine
+    // RenderCollectSystem — pushes renderables to engine, handles bone upload
     world.system<const Transform, const MeshHandle, const MaterialHandle>("RenderCollectSystem")
         .kind(flecs::OnStore)
-        .each([&engine](const Transform& t, const MeshHandle& mh, const MaterialHandle& mat) {
+        .each([&world](flecs::entity e, const Transform& t, const MeshHandle& mh, const MaterialHandle& mat) {
+            auto* engine = world.get<EngineRef>().ptr;
+
             glm::mat4 model = glm::translate(glm::mat4(1.0f), t.position)
                             * glm::mat4_cast(t.rotation)
                             * glm::scale(glm::mat4(1.0f), t.scale);
 
-            engine.push_renderable({
+            uint32_t bone_offset = 0;
+            uint32_t bone_count = 0;
+
+            const auto* anim = e.try_get<AnimatedModel>();
+            if (anim && !anim->bone_matrices.empty()) {
+                bone_count = static_cast<uint32_t>(anim->bone_matrices.size());
+                bone_offset = engine->upload_bones(anim->bone_matrices.data(), bone_count);
+            }
+
+            engine->push_renderable({
                 .model = model,
                 .mesh_index = mh.index,
                 .material_index = mat.index,
+                .bone_offset = bone_offset,
+                .bone_count = bone_count,
             });
         });
 }

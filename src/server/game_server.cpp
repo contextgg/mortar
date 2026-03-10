@@ -57,8 +57,11 @@ void GameServer::init(uint16_t port, const std::string& session_id,
     net_init();
     _physics.init();
 
+    // Set singleton so systems can access physics
+    _world.set<PhysicsRef>({&_physics});
+
     // Register shared systems (movement, physics, combat, AI — no rendering)
-    register_shared_systems(_world, &_physics);
+    register_shared_systems(_world);
 
     // If we have a session, fetch session info from the API
     if (!_session_id.empty()) {
@@ -110,7 +113,7 @@ void GameServer::init(uint16_t port, const std::string& session_id,
     } else {
         // Dev mode: load specified map or default
         std::string dev_map = map_path.empty() ? "assets/maps/default.json" : map_path;
-        auto map_result = load_map_server(dev_map, _world, _physics);
+        auto map_result = load_map_server(dev_map, _world);
         if (map_result.success) {
             std::cout << "[SERVER] Loaded map: " << dev_map << std::endl;
         } else {
@@ -161,7 +164,7 @@ bool GameServer::download_map(const std::string& map_slug) {
     std::cout << "[SERVER] Downloaded map: " << map_slug << " -> " << map_path << std::endl;
 
     // Load map entities (physics, health, AI, spawners) into the ECS world
-    auto map_result = load_map_server(map_path, _world, _physics);
+    auto map_result = load_map_server(map_path, _world);
     if (!map_result.success) {
         std::cerr << "[SERVER] Failed to load map entities: " << map_result.error << std::endl;
         return false;

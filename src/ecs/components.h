@@ -2,6 +2,28 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <memory>
+#include <vector>
+
+#include "animation/skeleton.h"
+
+// Forward declarations for resource singletons
+class Input;
+class VulkanEngine;
+class AudioEngine;
+class PhysicsWorld;
+
+// Resource singletons — stored as flecs singletons, accessed via world.get<>()
+struct InputRef { Input* ptr = nullptr; };
+struct PhysicsRef { PhysicsWorld* ptr = nullptr; };
+struct AudioRef { AudioEngine* ptr = nullptr; };
+struct EngineRef { VulkanEngine* ptr = nullptr; };
+
+// Loaded audio handles
+struct AudioSounds {
+    uint32_t shoot = 0;
+    uint32_t hit = 0;
+};
 
 struct Transform {
     glm::vec3 position{0.0f};
@@ -60,6 +82,7 @@ struct PlayerInput {
     glm::vec2 mouse_delta{0.0f};
     bool fire = false;
     bool jump = false;
+    bool sprint = false;
     bool dodge_left = false;   // triggered by double-tap A
     bool dodge_right = false;  // triggered by double-tap D
 };
@@ -70,6 +93,9 @@ struct MovementState {
     float dodge_cooldown = 0.0f;      // time until next dodge allowed
     float dodge_timer = 0.0f;         // remaining dodge burst time
     glm::vec3 dodge_velocity{0.0f};   // direction+speed of active dodge
+    float stamina = 100.0f;           // sprint stamina (0-100)
+    float max_stamina = 100.0f;
+    bool sprinting = false;           // true when actively sprinting
 };
 
 struct CharacterControllerTag {};
@@ -87,6 +113,7 @@ struct Weapon {
     int ammo = 30;
     int max_ammo = 30;
     float cooldown = 0.0f;
+    bool fired_this_frame = false; // set by ShootingSystem, read by effects
 };
 
 struct Projectile {
@@ -142,6 +169,26 @@ struct AudioSource {
     float volume = 1.0f;
     bool loop = false;
     bool playing = false;
+};
+
+// Skeletal animation
+struct AnimatedModel {
+    std::shared_ptr<SkeletonData> skeleton;
+    uint32_t current_clip = 0;
+    float time = 0.0f;
+    float speed = 1.0f;
+    bool looping = true;
+    bool playing = true;
+    std::vector<glm::mat4> bone_matrices; // computed each frame, one per joint
+};
+
+// Cached animation clip indices for the player (resolved at spawn time)
+struct PlayerAnimClips {
+    uint32_t idle = 0;
+    uint32_t run = 0;
+    uint32_t sprint = 0;
+    uint32_t jump_start = 0;
+    uint32_t attack = 0;
 };
 
 // HUD singleton (Phase 4+)

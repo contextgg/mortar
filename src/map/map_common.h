@@ -28,10 +28,10 @@ bool parse_map_file(const std::filesystem::path& path, nlohmann::json& out, MapL
 
 // Load shared entity data (transform, physics, health, AI, spawner, enemy tags)
 // into the ECS world. Skips visual-only data (mesh, material, lights, particles).
-// This is used by the server. The client calls this plus additional visual loading.
+// Requires PhysicsRef singleton to be set before calling.
 void load_map_entities_shared(const nlohmann::json& entities, flecs::world& world,
-                              PhysicsWorld& physics, MapLoadResult& result);
+                              MapLoadResult& result);
 
 // Server-side map loading: parses file and loads physics + gameplay entities.
-MapLoadResult load_map_server(const std::filesystem::path& path, flecs::world& world,
-                              PhysicsWorld& physics);
+// Requires PhysicsRef singleton to be set before calling.
+MapLoadResult load_map_server(const std::filesystem::path& path, flecs::world& world);

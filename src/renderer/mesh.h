@@ -10,6 +10,8 @@ struct Vertex {
     glm::vec3 normal;
     glm::vec2 uv;
     glm::vec4 color{1.0f};
+    glm::uvec4 bone_indices{0};
+    glm::vec4 bone_weights{0.0f};
 
     static std::vector<VkVertexInputBindingDescription> get_binding_descriptions();
     static std::vector<VkVertexInputAttributeDescription> get_attribute_descriptions();

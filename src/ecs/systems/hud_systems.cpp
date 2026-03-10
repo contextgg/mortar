@@ -8,21 +8,26 @@ void register_hud_systems(flecs::world& world) {
     world.system("HUDSystem")
         .kind(flecs::OnStore)
         .run([&world](flecs::iter&) {
-            // Get player health and weapon info
+            // Look up player by name
+            auto player = world.lookup("Player");
+
             float health = 100.0f;
             float max_health = 100.0f;
             int ammo = 0;
             int max_ammo = 0;
+            float stamina = 100.0f;
+            float max_stamina = 100.0f;
 
-            world.each([&](const Player&, const Health& h) {
-                health = h.current;
-                max_health = h.max;
-            });
+            if (player.is_alive()) {
+                const auto* h = player.try_get<Health>();
+                if (h) { health = h->current; max_health = h->max; }
 
-            world.each([&](const Player&, const Weapon& w) {
-                ammo = w.ammo;
-                max_ammo = w.max_ammo;
-            });
+                const auto* w = player.try_get<Weapon>();
+                if (w) { ammo = w->ammo; max_ammo = w->max_ammo; }
+
+                const auto* ms = player.try_get<MovementState>();
+                if (ms) { stamina = ms->stamina; max_stamina = ms->max_stamina; }
+            }
 
             // Crosshair
             ImDrawList* draw = ImGui::GetBackgroundDrawList();
@@ -38,9 +43,9 @@ void register_hud_systems(flecs::world& world) {
                           ImVec2(center.x, center.y + cross_size),
                           cross_color, cross_thick);
 
-            // Health bar
-            ImGui::SetNextWindowPos(ImVec2(20, ImGui::GetIO().DisplaySize.y - 60));
-            ImGui::SetNextWindowSize(ImVec2(250, 50));
+            // Health + Stamina bar
+            ImGui::SetNextWindowPos(ImVec2(20, ImGui::GetIO().DisplaySize.y - 75));
+            ImGui::SetNextWindowSize(ImVec2(250, 65));
             ImGui::Begin("##Health", nullptr,
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
@@ -58,6 +63,16 @@ void register_hud_systems(flecs::world& world) {
                 ("HP: " + std::to_string(static_cast<int>(health)) + "/" +
                  std::to_string(static_cast<int>(max_health))).c_str());
             ImGui::PopStyleColor();
+
+            // Stamina bar
+            float stamina_frac = stamina / max_stamina;
+            ImVec4 stamina_color = stamina_frac > 0.3f
+                ? ImVec4(0.2f, 0.6f, 0.9f, 1.0f)
+                : ImVec4(0.9f, 0.4f, 0.1f, 1.0f);
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, stamina_color);
+            ImGui::ProgressBar(stamina_frac, ImVec2(200, 12), "");
+            ImGui::PopStyleColor();
+
             ImGui::End();
 
             // Ammo counter

@@ -281,12 +281,18 @@ void VulkanEngine::init_descriptors() {
         .add_binding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         .build(_device);
 
-    // Descriptor pool — enough for scene + many materials
+    // Bone set layout (set 2): SSBO at binding 0
+    _bone_set_layout = DescriptorLayoutBuilder()
+        .add_binding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+        .build(_device);
+
+    // Descriptor pool — enough for scene + many materials + bone SSBO
     std::vector<VkDescriptorPoolSize> pool_sizes = {
         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100},
         {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 4},
     };
-    _descriptor_allocator.init(_device, 100, pool_sizes);
+    _descriptor_allocator.init(_device, 110, pool_sizes);
 
     // Allocate scene descriptor set
     _scene_descriptor_set = _descriptor_allocator.allocate(_scene_set_layout);
@@ -310,6 +316,34 @@ void VulkanEngine::init_descriptors() {
     scene_write.pBufferInfo = &scene_buf_info;
 
     vkUpdateDescriptorSets(_device, 1, &scene_write, 0, nullptr);
+
+    // Bone SSBO — persistently mapped for per-frame bone matrix uploads
+    _bone_ssbo = create_buffer(MAX_BONE_MATRICES * sizeof(glm::mat4),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+    vmaMapMemory(_allocator, _bone_ssbo.allocation, &_bone_ssbo_mapped);
+
+    // Write an identity matrix at index 0 as a safe default
+    auto* ptr = static_cast<glm::mat4*>(_bone_ssbo_mapped);
+    ptr[0] = glm::mat4(1.0f);
+    _bone_write_offset = 1;
+
+    // Allocate and write bone descriptor set
+    _bone_descriptor_set = _descriptor_allocator.allocate(_bone_set_layout);
+
+    VkDescriptorBufferInfo bone_buf_info{};
+    bone_buf_info.buffer = _bone_ssbo.buffer;
+    bone_buf_info.offset = 0;
+    bone_buf_info.range = MAX_BONE_MATRICES * sizeof(glm::mat4);
+
+    VkWriteDescriptorSet bone_write{};
+    bone_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    bone_write.dstSet = _bone_descriptor_set;
+    bone_write.dstBinding = 0;
+    bone_write.descriptorCount = 1;
+    bone_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    bone_write.pBufferInfo = &bone_buf_info;
+
+    vkUpdateDescriptorSets(_device, 1, &bone_write, 0, nullptr);
 }
 
 void VulkanEngine::init_pipeline() {
@@ -334,11 +368,11 @@ void VulkanEngine::init_pipeline() {
     push_range.offset = 0;
     push_range.size = sizeof(PushConstants);
 
-    VkDescriptorSetLayout set_layouts[] = {_scene_set_layout, _material_set_layout};
+    VkDescriptorSetLayout set_layouts[] = {_scene_set_layout, _material_set_layout, _bone_set_layout};
 
     VkPipelineLayoutCreateInfo layout_info{};
     layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    layout_info.setLayoutCount = 2;
+    layout_info.setLayoutCount = 3;
     layout_info.pSetLayouts = set_layouts;
     layout_info.pushConstantRangeCount = 1;
     layout_info.pPushConstantRanges = &push_range;
@@ -459,6 +493,24 @@ void VulkanEngine::update_scene_ubo(const SceneUBO& ubo) {
     vmaUnmapMemory(_allocator, _scene_ubo_buffer.allocation);
 }
 
+uint32_t VulkanEngine::upload_texture(const uint8_t* pixels, int width, int height) {
+    auto submit_fn = [this](std::function<void(VkCommandBuffer)>&& fn) {
+        immediate_submit(std::move(fn));
+    };
+    uint32_t index = static_cast<uint32_t>(_textures.size());
+    _textures.push_back(create_texture_from_data(_device, _allocator, submit_fn, pixels, width, height));
+    return index;
+}
+
+uint32_t VulkanEngine::load_texture(const std::string& path) {
+    auto submit_fn = [this](std::function<void(VkCommandBuffer)>&& fn) {
+        immediate_submit(std::move(fn));
+    };
+    uint32_t index = static_cast<uint32_t>(_textures.size());
+    _textures.push_back(load_texture_from_file(_device, _allocator, submit_fn, path));
+    return index;
+}
+
 uint32_t VulkanEngine::create_material(const MaterialUBO& props, uint32_t albedo_texture) {
     GPUMaterial mat;
     mat.properties = props;
@@ -485,12 +537,30 @@ uint32_t VulkanEngine::create_material(const MaterialUBO& props, uint32_t albedo
     return index;
 }
 
+uint32_t VulkanEngine::upload_bones(const glm::mat4* matrices, uint32_t count) {
+    uint32_t offset = _bone_write_offset;
+    if (offset + count > MAX_BONE_MATRICES) {
+        std::cerr << "[Engine] Bone SSBO overflow (" << offset + count << " > " << MAX_BONE_MATRICES << ")" << std::endl;
+        return 0;
+    }
+
+    auto* dst = static_cast<glm::mat4*>(_bone_ssbo_mapped) + offset;
+    memcpy(dst, matrices, count * sizeof(glm::mat4));
+    _bone_write_offset += count;
+    return offset;
+}
+
+void VulkanEngine::reset_bone_data() {
+    _bone_write_offset = 1; // Keep identity matrix at index 0
+}
+
 void VulkanEngine::push_renderable(const Renderable& r) {
     _renderables.push_back(r);
 }
 
 void VulkanEngine::clear_renderables() {
     _renderables.clear();
+    reset_bone_data();
 }
 
 void VulkanEngine::begin_frame() {
@@ -529,6 +599,10 @@ void VulkanEngine::draw_frame() {
     vkCmdBindDescriptorSets(_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
         _pipeline_layout, 0, 1, &_scene_descriptor_set, 0, nullptr);
 
+    // Bind bone SSBO (set 2) — once per frame
+    vkCmdBindDescriptorSets(_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+        _pipeline_layout, 2, 1, &_bone_descriptor_set, 0, nullptr);
+
     // Sort renderables by material to minimize descriptor switches
     std::sort(_renderables.begin(), _renderables.end(),
         [](const Renderable& a, const Renderable& b) {
@@ -554,6 +628,8 @@ void VulkanEngine::draw_frame() {
 
         PushConstants pc{};
         pc.model = renderable.model;
+        pc.bone_offset = renderable.bone_offset;
+        pc.bone_count = renderable.bone_count;
 
         vkCmdPushConstants(_command_buffer, _pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT,
                            0, sizeof(PushConstants), &pc);
@@ -623,10 +699,15 @@ void VulkanEngine::cleanup() {
     // Scene UBO
     vmaDestroyBuffer(_allocator, _scene_ubo_buffer.buffer, _scene_ubo_buffer.allocation);
 
+    // Bone SSBO
+    vmaUnmapMemory(_allocator, _bone_ssbo.allocation);
+    vmaDestroyBuffer(_allocator, _bone_ssbo.buffer, _bone_ssbo.allocation);
+
     // Descriptors
     _descriptor_allocator.cleanup();
     vkDestroyDescriptorSetLayout(_device, _scene_set_layout, nullptr);
     vkDestroyDescriptorSetLayout(_device, _material_set_layout, nullptr);
+    vkDestroyDescriptorSetLayout(_device, _bone_set_layout, nullptr);
 
     vkDestroyPipeline(_device, _pipeline, nullptr);
     vkDestroyPipelineLayout(_device, _pipeline_layout, nullptr);

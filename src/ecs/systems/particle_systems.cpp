@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cstdlib>
 
-void register_particle_systems(flecs::world& world, VulkanEngine& engine) {
+void register_particle_systems(flecs::world& world) {
     // ParticleEmitSystem — spawn particles from emitters
     world.system<const Transform, ParticleEmitter>("ParticleEmitSystem")
         .kind(flecs::OnStore)
@@ -15,7 +15,6 @@ void register_particle_systems(flecs::world& world, VulkanEngine& engine) {
 
             bool should_emit = false;
             if (emitter.emit_interval <= 0.0f) {
-                // One-shot: emit once then deactivate
                 should_emit = true;
                 emitter.active = false;
             } else {
@@ -29,7 +28,6 @@ void register_particle_systems(flecs::world& world, VulkanEngine& engine) {
             if (!should_emit) return;
 
             for (int i = 0; i < emitter.burst_count; i++) {
-                // Random direction
                 float theta = (static_cast<float>(rand()) / RAND_MAX) * 6.28318f;
                 float phi = (static_cast<float>(rand()) / RAND_MAX) * 3.14159f * 0.5f;
                 float speed = emitter.speed * (0.5f + 0.5f * static_cast<float>(rand()) / RAND_MAX);
@@ -67,26 +65,22 @@ void register_particle_systems(flecs::world& world, VulkanEngine& engine) {
         });
 
     // ParticleRenderCollectSystem — render particles as small cubes
-    // Particles use mesh index 0 (cube) and a special particle material
     world.system<const Transform, const Particle>("ParticleRenderCollectSystem")
         .kind(flecs::OnStore)
-        .each([&engine, &world](const Transform& t, const Particle& p) {
+        .each([&world](const Transform& t, const Particle& p) {
+            auto* engine = world.get<EngineRef>().ptr;
+
             float frac = p.age / p.lifetime;
             if (frac > 1.0f) frac = 1.0f;
 
-            glm::vec4 color = glm::mix(p.start_color, p.end_color, frac);
-
-            // Use default material (index 0) — particles get their color from vertex color
-            // but since we can't easily change vertex color per-instance with current setup,
-            // we just render them as small cubes with the default material
             if (t.scale.x > 0.01f) {
                 glm::mat4 model = glm::translate(glm::mat4(1.0f), t.position)
                                 * glm::scale(glm::mat4(1.0f), t.scale);
 
-                engine.push_renderable({
+                engine->push_renderable({
                     .model = model,
-                    .mesh_index = 0, // cube mesh (must be uploaded as index 0)
-                    .material_index = 0, // default material
+                    .mesh_index = 0,
+                    .material_index = 0,
                 });
             }
         });

@@ -34,6 +34,18 @@ std::vector<VkVertexInputAttributeDescription> Vertex::get_attribute_description
             .format = VK_FORMAT_R32G32B32A32_SFLOAT,
             .offset = offsetof(Vertex, color),
         },
+        {
+            .location = 4,
+            .binding = 0,
+            .format = VK_FORMAT_R32G32B32A32_UINT,
+            .offset = offsetof(Vertex, bone_indices),
+        },
+        {
+            .location = 5,
+            .binding = 0,
+            .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+            .offset = offsetof(Vertex, bone_weights),
+        },
     };
 }
 
