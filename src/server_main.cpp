@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
     std::string session_id;
     std::string api_base = "https://api.ctx.gg";
     std::string server_secret;
+    std::string map_path;
 
     // Check environment variables first
     if (const char* env = std::getenv("SERVER_SECRET")) server_secret = env;
@@ -28,6 +29,8 @@ int main(int argc, char* argv[]) {
         std::string arg = argv[i];
         if ((arg == "--port" || arg == "-p") && i + 1 < argc) {
             port = static_cast<uint16_t>(std::stoi(argv[++i]));
+        } else if ((arg == "--map" || arg == "-m") && i + 1 < argc) {
+            map_path = argv[++i];
         } else if (arg == "--session" && i + 1 < argc) {
             session_id = argv[++i];
         } else if (arg == "--api" && i + 1 < argc) {
@@ -37,6 +40,7 @@ int main(int argc, char* argv[]) {
         } else if (arg == "--help" || arg == "-h") {
             std::cout << "Usage: mortar-server [options]\n"
                       << "  --port, -p <port>      Listen port (default: " << DEFAULT_SERVER_PORT << ")\n"
+                      << "  --map, -m <path>       Map file to load (default: assets/maps/default.json)\n"
                       << "  --session <id>         Game session ID from API\n"
                       << "  --api <url>            API base URL (default: https://api.ctx.gg)\n"
                       << "  --secret <secret>      Server auth secret\n"
@@ -56,7 +60,7 @@ int main(int argc, char* argv[]) {
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
 
-    server.init(port, session_id, api_base, server_secret);
+    server.init(port, session_id, api_base, server_secret, map_path);
     server.run();
 
     return 0;

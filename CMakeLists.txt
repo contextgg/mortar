@@ -42,6 +42,7 @@ add_library(mortar_shared STATIC
     src/game/player.cpp
     src/game/enemy.cpp
     src/game/spawner.cpp
+    src/map/map_common.cpp
     src/net/net_common.cpp
 )
 

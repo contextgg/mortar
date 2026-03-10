@@ -1,6 +1,7 @@
 #include "server/game_server.h"
 #include "net/net_common.h"
 #include "ecs/systems.h"
+#include "map/map_common.h"
 
 #include <nlohmann/json.hpp>
 #include <iostream>
@@ -46,7 +47,8 @@ static std::string http_post(const std::string& url, const std::string& body,
 }
 
 void GameServer::init(uint16_t port, const std::string& session_id,
-                       const std::string& api_base, const std::string& server_secret) {
+                       const std::string& api_base, const std::string& server_secret,
+                       const std::string& map_path) {
     _port = port;
     _session_id = session_id;
     _api_base = api_base;
@@ -57,10 +59,6 @@ void GameServer::init(uint16_t port, const std::string& session_id,
 
     // Register shared systems (movement, physics, combat, AI — no rendering)
     register_shared_systems(_world, &_physics);
-
-    // Set up physics ground plane
-    _physics.add_box(glm::vec3(50.0f, 0.1f, 50.0f), glm::vec3(0, -0.1f, 0),
-                     glm::quat(1, 0, 0, 0), true);
 
     // If we have a session, fetch session info from the API
     if (!_session_id.empty()) {
@@ -109,6 +107,16 @@ void GameServer::init(uint16_t port, const std::string& session_id,
 
         // Claim the session (tell API our address)
         claim_session();
+    } else {
+        // Dev mode: load specified map or default
+        std::string dev_map = map_path.empty() ? "assets/maps/default.json" : map_path;
+        auto map_result = load_map_server(dev_map, _world, _physics);
+        if (map_result.success) {
+            std::cout << "[SERVER] Loaded map: " << dev_map << std::endl;
+        } else {
+            std::cerr << "[SERVER] Warning: failed to load map (" << map_result.error
+                      << "), running with empty world" << std::endl;
+        }
     }
 
     // Wire up networking callbacks
@@ -151,7 +159,14 @@ bool GameServer::download_map(const std::string& map_slug) {
     out.close();
 
     std::cout << "[SERVER] Downloaded map: " << map_slug << " -> " << map_path << std::endl;
-    // TODO: Load map entities into ECS world using a server-side map loader
+
+    // Load map entities (physics, health, AI, spawners) into the ECS world
+    auto map_result = load_map_server(map_path, _world, _physics);
+    if (!map_result.success) {
+        std::cerr << "[SERVER] Failed to load map entities: " << map_result.error << std::endl;
+        return false;
+    }
+    std::cout << "[SERVER] Map entities loaded" << std::endl;
     return true;
 }
 

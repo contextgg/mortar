@@ -16,7 +16,8 @@ class GameServer {
 public:
     void init(uint16_t port, const std::string& session_id = "",
               const std::string& api_base = "https://api.ctx.gg",
-              const std::string& server_secret = "");
+              const std::string& server_secret = "",
+              const std::string& map_path = "");
     void run();  // Blocking tick loop
     void stop();
 
